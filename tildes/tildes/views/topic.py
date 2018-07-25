@@ -128,6 +128,7 @@ def get_group_topics(
         .inside_groups(groups)
         .inside_time_period(period)
         .has_tag(tag)
+        .is_pinned(False)
         .apply_sort_option(order)
         .after_id36(after)
         .before_id36(before)
@@ -143,6 +144,21 @@ def get_group_topics(
 
     topics = query.get_page(per_page)
 
+    # don't show pinned topics on home page
+    if request.matched_route.name == 'home':
+        pinned_topics = []
+    else:
+        # get pinned topics
+        pinned_query = (
+            request.query(Topic)
+            .join_all_relationships()
+            .inside_groups(groups)
+            .is_pinned(True)
+            .apply_sort_option(order)
+        )
+
+        pinned_topics = pinned_query.all()
+
     period_options = [
         SimpleHoursPeriod(hours) for hours in (1, 12, 24, 72)]
 
@@ -154,6 +170,7 @@ def get_group_topics(
     return {
         'group': request.context,
         'topics': topics,
+        'pinned_topics': pinned_topics,
         'order': order,
         'order_options': TopicSortOption,
         'period': period,

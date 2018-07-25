@@ -141,3 +141,7 @@ class TopicQuery(PaginatedQuery):
 
         # pylint: disable=protected-access
         return self.filter(Topic._tags.descendant_of(tag))  # type: ignore
+
+    def is_pinned(self, pinned: bool) -> 'TopicQuery':
+        """Restrict the topics to be pinned or unpinned."""
+        return self.filter(Topic.is_pinned == pinned)
