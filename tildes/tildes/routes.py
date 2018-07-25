@@ -129,7 +129,7 @@ def add_intercooler_routes(config: Configurator) -> None:
     add_ic_route(
         'topic_lock', '/topics/{topic_id36}/lock', factory=topic_by_id36)
     add_ic_route(
-        'topic_sticky', '/topics/{topic_id36}/sticky', factory=topic_by_id36)
+        'topic_pin', '/topics/{topic_id36}/pin', factory=topic_by_id36)
     add_ic_route(
         'topic_title', '/topics/{topic_id36}/title', factory=topic_by_id36)
     add_ic_route(

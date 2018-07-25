@@ -269,33 +269,33 @@ def unlock_topic(request: Request) -> Response:
 
 
 @ic_view_config(
-    route_name='topic_sticky',
+    route_name='topic_pin',
     request_method='PUT',
-    permission='sticky',
+    permission='pin',
 )
-def sticky_topic(request: Request) -> Response:
-    """Sticky a topic with Intercooler."""
+def pin_topic(request: Request) -> Response:
+    """Pin a topic with Intercooler."""
     topic = request.context
 
-    topic.is_stickied = True
-    request.db_session.add(LogTopic(LogEventType.TOPIC_STICKY, request, topic))
+    topic.is_pinned = True
+    request.db_session.add(LogTopic(LogEventType.TOPIC_PINNED, request, topic))
 
-    return Response('Stickied')
+    return Response('Pinned')
 
 
 @ic_view_config(
-    route_name='topic_sticky',
+    route_name='topic_pin',
     request_method='DELETE',
-    permission='sticky',
+    permission='pin',
 )
-def unsticky_topic(request: Request) -> Response:
-    """Unsticky a topic with Intercooler."""
+def unpin_topic(request: Request) -> Response:
+    """Unpin a topic with Intercooler."""
     topic = request.context
 
-    topic.is_stickied = False
-    request.db_session.add(LogTopic(LogEventType.TOPIC_UNSTICKY, request, topic))
+    topic.is_pinned = False
+    request.db_session.add(LogTopic(LogEventType.TOPIC_UNPINNED, request, topic))
 
-    return Response('Unstickied')
+    return Response('Unpinned')
 
 
 @ic_view_config(

@@ -142,8 +142,8 @@
     {% do classes.append('is-topic-official') %}
   {% endif %}
 
-  {% if topic.is_stickied %}
-    {% do classes.append('is-topic-sticky') %}
+  {% if topic.is_pinned %}
+    {% do classes.append('is-topic-pinned') %}
   {% endif %}
 
   {{ classes|join(' ') }}

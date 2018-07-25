@@ -205,11 +205,11 @@ def get_topic(request: Request, comment_order: CommentSortOption) -> dict:
     visible_events = (
         LogEventType.TOPIC_LOCK,
         LogEventType.TOPIC_MOVE,
-        LogEventType.TOPIC_STICKY,
+        LogEventType.TOPIC_PINNED,
         LogEventType.TOPIC_TAG,
         LogEventType.TOPIC_TITLE_EDIT,
         LogEventType.TOPIC_UNLOCK,
-        LogEventType.TOPIC_UNSTICKY,
+        LogEventType.TOPIC_UNPINNED,
     )
     log = (
         request.query(LogTopic)

@@ -132,26 +132,26 @@
       </li>
     {% endif %}
 
-    {% if request.has_permission('sticky', topic) %}
+    {% if request.has_permission('pin', topic) %}
       <li>
-      {% if not topic.is_stickied %}
+      {% if not topic.is_pinned %}
         <a class="post-button"
           data-ic-put-to="{{ request.route_url(
-            'ic_topic_sticky',
+            'ic_topic_pin',
             topic_id36=topic.topic_id36,
           ) }}"
           data-ic-replace-target="true"
-          data-ic-confirm="Sticky this topic?"
-        >Sticky</a>
+          data-ic-confirm="Pin this topic?"
+        >Pin</a>
       {% else %}
         <a class="post-button"
           data-ic-delete-from="{{ request.route_url(
-            'ic_topic_sticky',
+            'ic_topic_pin',
             topic_id36=topic.topic_id36,
           ) }}"
           data-ic-replace-target="true"
-          data-ic-confirm="Unsticky this topic?"
-        >Unsticky</a>
+          data-ic-confirm="Unpin this topic?"
+        >Unpin</a>
       {% endif %}
       </li>
     {% endif %}

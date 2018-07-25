@@ -117,7 +117,7 @@ class Topic(DatabaseModel):
         'tags', ArrayOfLtree, nullable=False, server_default='{}')
     is_official: bool = Column(Boolean, nullable=False, server_default='false')
     is_locked: bool = Column(Boolean, nullable=False, server_default='false')
-    is_stickied: bool = Column(Boolean, nullable=False, server_default='false')
+    is_pinned: bool = Column(Boolean, nullable=False, server_default='false')
 
     user: User = relationship('User', lazy=False, innerjoin=True)
     group: Group = relationship('Group', innerjoin=True)
@@ -221,7 +221,7 @@ class Topic(DatabaseModel):
             (Allow, 'admin', 'move'),
             (Allow, 'admin', 'edit_title'),
             (Allow, 'admin', 'tag'),
-            (Allow, 'admin', 'sticky'),
+            (Allow, 'admin', 'pin'),
         ]
 
         if not (self.is_locked or self.is_deleted or self.is_removed):
