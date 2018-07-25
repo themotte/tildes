@@ -133,6 +133,10 @@ class LogTopic(DatabaseModel, BaseLog):
             old_title = self.info['old']  # noqa
             new_title = self.info['new']  # noqa
             return f'changed title from "{old_title}" to "{new_title}"'
+        elif self.event_type == LogEventType.TOPIC_STICKY:
+            return 'stickied topic'
+        elif self.event_type == LogEventType.TOPIC_UNSTICKY:
+            return 'unstickied topic'
 
         return f'performed action {self.event_type.name}'  # noqa
 

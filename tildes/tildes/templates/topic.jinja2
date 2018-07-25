@@ -131,6 +131,30 @@
       {% endif %}
       </li>
     {% endif %}
+
+    {% if request.has_permission('sticky', topic) %}
+      <li>
+      {% if not topic.is_stickied %}
+        <a class="post-button"
+          data-ic-put-to="{{ request.route_url(
+            'ic_topic_sticky',
+            topic_id36=topic.topic_id36,
+          ) }}"
+          data-ic-replace-target="true"
+          data-ic-confirm="Sticky this topic?"
+        >Sticky</a>
+      {% else %}
+        <a class="post-button"
+          data-ic-delete-from="{{ request.route_url(
+            'ic_topic_sticky',
+            topic_id36=topic.topic_id36,
+          ) }}"
+          data-ic-replace-target="true"
+          data-ic-confirm="Unsticky this topic?"
+        >Unsticky</a>
+      {% endif %}
+      </li>
+    {% endif %}
   </menu>
 {% endif %}
 

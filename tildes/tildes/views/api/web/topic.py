@@ -269,6 +269,36 @@ def unlock_topic(request: Request) -> Response:
 
 
 @ic_view_config(
+    route_name='topic_sticky',
+    request_method='PUT',
+    permission='sticky',
+)
+def sticky_topic(request: Request) -> Response:
+    """Sticky a topic with Intercooler."""
+    topic = request.context
+
+    topic.is_stickied = True
+    request.db_session.add(LogTopic(LogEventType.TOPIC_STICKY, request, topic))
+
+    return Response('Stickied')
+
+
+@ic_view_config(
+    route_name='topic_sticky',
+    request_method='DELETE',
+    permission='sticky',
+)
+def unsticky_topic(request: Request) -> Response:
+    """Unsticky a topic with Intercooler."""
+    topic = request.context
+
+    topic.is_stickied = False
+    request.db_session.add(LogTopic(LogEventType.TOPIC_UNSTICKY, request, topic))
+
+    return Response('Unstickied')
+
+
+@ic_view_config(
     route_name='topic_title',
     request_method='GET',
     renderer='topic_title_edit.jinja2',
