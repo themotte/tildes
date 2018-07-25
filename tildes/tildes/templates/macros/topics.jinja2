@@ -142,5 +142,9 @@
     {% do classes.append('is-topic-official') %}
   {% endif %}
 
+  {% if topic.is_stickied %}
+    {% do classes.append('is-topic-sticky') %}
+  {% endif %}
+
   {{ classes|join(' ') }}
 {% endmacro %}
