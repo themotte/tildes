@@ -122,17 +122,28 @@ def get_group_topics(
     if period is missing:
         period = default_settings.period
 
+    # set up the basic query for topics
     query = (
         request.query(Topic)
         .join_all_relationships()
         .inside_groups(groups)
-        .inside_time_period(period)
-        .has_tag(tag)
-        .is_pinned(False)
         .apply_sort_option(order)
-        .after_id36(after)
-        .before_id36(before)
     )
+
+    # restrict the time period, if not set to "all time"
+    if period:
+        query = query.inside_time_period(period)
+
+    # restrict to a specific tag, if we're viewing a single one
+    if tag:
+        query = query.has_tag(tag)
+
+    # apply before/after pagination restrictions if relevant
+    if before:
+        query = query.before_id36(before)
+
+    if after:
+        query = query.after_id36(after)
 
     # apply topic tag filters unless they're disabled or viewing a single tag
     if not (tag or unfiltered):
@@ -281,6 +292,7 @@ def post_comment_on_topic(request: Request, markdown: str) -> HTTPFound:
 
 def _get_default_settings(request: Request, order: Any) -> DefaultSettings:
     if isinstance(request.context, Group):
+        is_home_page = False
         user_settings = (
             request.query(UserGroupSettings)
             .filter(
@@ -290,6 +302,7 @@ def _get_default_settings(request: Request, order: Any) -> DefaultSettings:
             .one_or_none()
         )
     else:
+        is_home_page = True
         user_settings = None
 
     if user_settings and user_settings.default_order:
@@ -311,9 +324,15 @@ def _get_default_settings(request: Request, order: Any) -> DefaultSettings:
         user_default = request.user.home_default_period
         default_period = ShortTimePeriod().deserialize(user_default)
     else:
-        # default to "all time" if sorting by new, 3d if activity, otherwise
-        # last 24h
+        # Overall default periods, if the user doesn't have either a
+        # group-specific or a home default set up:
+        #   * "all time" if sorting by new
+        #   * "all time" if sorting by activity and inside a group
+        #   * "3 days" if sorting by activity and on home page
+        #   * "1 day" otherwise (sorting by most votes or most comments)
         if order == TopicSortOption.NEW:
+            default_period = None
+        elif order == TopicSortOption.ACTIVITY and not is_home_page:
             default_period = None
         elif order == TopicSortOption.ACTIVITY:
             default_period = SimpleHoursPeriod(72)
