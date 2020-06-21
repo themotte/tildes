@@ -1,3 +1,4 @@
+apt_distro: xenial
 gunicorn_args: --workers 8
 ini_file: production.ini
 ssl_cert_path: /etc/letsencrypt/live/tildes.net/fullchain.pem

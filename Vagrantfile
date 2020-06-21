@@ -4,6 +4,7 @@
 VAGRANT_CONFIG_VERSION = "2"
 
 Vagrant.configure(VAGRANT_CONFIG_VERSION) do |config|
+  # This should correspond to apt_distro in `salt/pillar`
   config.vm.box = "ubuntu/xenial64"
 
   # Main application folder

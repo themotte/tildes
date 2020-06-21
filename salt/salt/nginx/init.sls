@@ -1,7 +1,7 @@
 nginx:
   pkgrepo.managed:
-    - name: deb http://nginx.org/packages/ubuntu/ xenial nginx
-    - dist: xenial
+    - name: deb http://nginx.org/packages/ubuntu/ {{ pillar['apt_distro'] }} nginx
+    - dist: {{ pillar['apt_distro'] }}
     - file: /etc/apt/sources.list.d/nginx.list
     - key_url: https://nginx.org/keys/nginx_signing.key
     - require_in:

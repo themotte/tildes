@@ -1,3 +1,4 @@
+apt_distro: xenial
 gunicorn_args: --reload
 ini_file: development.ini
 ssl_cert_path: /etc/pki/tls/certs/localhost.crt
