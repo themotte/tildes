@@ -1,3 +1,4 @@
+{% from 'common.jinja2' import ssl_cert_path, ssl_private_key_path %}
 user nginx;
 worker_processes {{ pillar['nginx_worker_processes'] }};
 
@@ -77,8 +78,8 @@ http {
       text/x-component
       text/x-cross-domain-policy;
 
-    ssl_certificate {{ pillar['ssl_cert_path'] }};
-    ssl_certificate_key {{ pillar['ssl_private_key_path'] }};
+    ssl_certificate {{ ssl_cert_path }};
+    ssl_certificate_key {{ ssl_private_key_path }};
     ssl_session_timeout 1d;
     ssl_session_cache shared:SSL:50m;
     ssl_session_tickets off;

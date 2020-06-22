@@ -8,6 +8,10 @@
 
 {% if grains['id'] == 'dev' %}
   {% set app_username = 'vagrant' %}
+  {% set ssl_cert_path = '/etc/pki/tls/certs/localhost.crt' %}
+  {% set ssl_private_key_path = '/etc/pki/tls/certs/localhost.key' %}
 {% else %}
   {% set app_username = 'tildes' %}
+  {% set ssl_cert_path = '/etc/letsencrypt/live/' + pillar['hostname'] + '/fullchain.pem' %}
+  {% set ssl_cert_path = '/etc/letsencrypt/live/' + pillar['hostname'] + '/privkey.pem' %}
 {% endif %}
