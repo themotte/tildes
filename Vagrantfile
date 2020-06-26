@@ -4,7 +4,8 @@
 VAGRANT_CONFIG_VERSION = "2"
 
 Vagrant.configure(VAGRANT_CONFIG_VERSION) do |config|
-  config.vm.box = "ubuntu/xenial64"
+  # This should correspond to apt_distro in `salt/pillar`
+  config.vm.box = "ubuntu/bionic64"
 
   # Main application folder
   config.vm.synced_folder "tildes/", "/opt/tildes/"
@@ -25,11 +26,11 @@ Vagrant.configure(VAGRANT_CONFIG_VERSION) do |config|
       salt.log_level = "info"
 
       salt.install_type = "stable"
-      salt.version = "2019.2.3"
+      salt.version = "3000"
   end
 
   config.vm.provider "virtualbox" do |vb|
-      vb.memory = "4096"
-      vb.cpus = "4"
+      vb.memory = "2048"
+      vb.cpus = "1"
   end
 end
