@@ -20,5 +20,5 @@ rsync minion.prod "root@$HOST:/etc/salt/minion" \
         || die "rsyncing /etc/salt/minon "
 rsync production.ini "root@$HOST:/opt/tildes" \
         || die "rsyncing /opt/tildes/production.ini"
-#ssh "root@$HOST" salt-call --local state.apply \
-#        || die "applying salt"
+ssh "root@$HOST" salt-call --local state.apply \
+        || die "applying salt"
