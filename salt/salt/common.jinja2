@@ -13,5 +13,5 @@
 {% else %}
   {% set app_username = 'tildes' %}
   {% set ssl_cert_path = '/etc/letsencrypt/live/' + pillar['hostname'] + '/fullchain.pem' %}
-  {% set ssl_cert_path = '/etc/letsencrypt/live/' + pillar['hostname'] + '/privkey.pem' %}
+  {% set ssl_private_key_path = '/etc/letsencrypt/live/' + pillar['hostname'] + '/privkey.pem' %}
 {% endif %}
