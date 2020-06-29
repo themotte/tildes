@@ -1,0 +1,8 @@
+[servers]
+tildes_server ansible_host=HOSTNAME
+
+[www]
+tildes_server
+
+[all:vars]
+ansible_python_interpreter=/usr/bin/python3
