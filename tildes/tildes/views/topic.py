@@ -34,7 +34,7 @@ from tildes.models.log import LogComment, LogTopic
 from tildes.models.topic import Topic, TopicSchedule, TopicVisit
 from tildes.models.user import UserGroupSettings
 from tildes.schemas.comment import CommentSchema
-from tildes.schemas.fields import Enum, ShortTimePeriod
+from tildes.schemas.fields import ShortTimePeriod
 from tildes.schemas.listing import TopicListingSchema
 from tildes.schemas.topic import TopicSchema
 from tildes.views.decorators import rate_limit_view
@@ -379,15 +379,9 @@ def get_new_topic_form(request: Request) -> dict:
 
 @view_config(route_name="topic", renderer="topic.jinja2")
 @view_config(route_name="topic_no_title", renderer="topic.jinja2")
-@use_kwargs({"comment_order": Enum(CommentTreeSortOption, missing=None)})
-def get_topic(request: Request, comment_order: CommentTreeSortOption) -> dict:
+def get_topic(request: Request) -> dict:
     """View a single topic."""
     topic = request.context
-    if comment_order is None:
-        if request.user and request.user.comment_sort_order_default:
-            comment_order = request.user.comment_sort_order_default
-        else:
-            comment_order = CommentTreeSortOption.RELEVANCE
 
     # deleted and removed comments need to be included since they're necessary for
     # building the tree if they have replies
@@ -399,7 +393,7 @@ def get_topic(request: Request, comment_order: CommentTreeSortOption) -> dict:
         .order_by(Comment.created_time)
         .all()
     )
-    tree = CommentTree(comments, comment_order, request.user)
+    tree = CommentTree(comments, CommentTreeSortOption.NEWEST, request.user)
 
     # check for link information (content metadata) to display
     if topic.is_link_type:
@@ -451,8 +445,6 @@ def get_topic(request: Request, comment_order: CommentTreeSortOption) -> dict:
         "content_metadata": content_metadata,
         "log": log,
         "comments": tree,
-        "comment_order": comment_order,
-        "comment_order_options": CommentTreeSortOption,
         "comment_label_options": CommentLabelOption,
     }
 
