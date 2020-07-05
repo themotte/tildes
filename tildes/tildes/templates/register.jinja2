@@ -8,7 +8,7 @@
 {% block main_heading %}Register a new account{% endblock %}
 
 {% block content %}
-  {% if not code %}
+  {% if not code and not request.registry.settings["tildes.open_registration"] %}
     <div class="toast toast-warning">
       Registration is currently invite-only. You must have a valid invite code to be able to register.
     </div>
@@ -19,10 +19,14 @@
   <form class="form-narrow" method="post" data-ic-post-to="/register">
     <input type="hidden" name="csrf_token" value="{{ get_csrf_token() }}">
 
-    <div class="form-group">
-      <label class="form-label" for="invite_code"><strong>Invite Code</strong></label>
-      <input class="form-input" id="invite_code" name="invite_code" type="text" placeholder="Invite code" value="{{ code }}">
-    </div>
+    {% if not request.registry.settings["tildes.open_registration"] %}
+      <div class="form-group">
+        <label class="form-label" for="invite_code"><strong>Invite Code</strong></label>
+        <input class="form-input" id="invite_code" name="invite_code" type="text" placeholder="Invite code" value="{{ code }}">
+      </div>
+    {% else %}
+      <input type="hidden" name="invite_code" value="">
+    {% endif %}
 
     <div class="form-group">
       <label class="form-label" for="username">Username</label>

@@ -28,6 +28,10 @@
           href="/login?from_url={{ request.path_qs|quote_plus }}"
         {% endif %}
       >Log in</a>
+
+      {% if request.registry.settings["tildes.open_registration"] %}
+        <a class="text-small register-account-alert link-no-visited-color" href="/register">Register</a>
+      {% endif %}
     {% endif %}
   </div>
 {% endmacro %}

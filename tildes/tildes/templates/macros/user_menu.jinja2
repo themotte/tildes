@@ -69,13 +69,15 @@
 
     <li>Misc</li>
     <ul class="nav">
-      <li class="nav-item {{ 'active' if route == 'invite' else '' }}">
-        {% if request.user.invite_codes_remaining %}<strong>{% endif %}
-        <a href="/invite">
-          Invite someone {% if request.user.invite_codes_remaining %}({{ request.user.invite_codes_remaining }}){% endif %}
-        </a>
-        {% if request.user.invite_codes_remaining %}</strong>{% endif %}
-      </li>
+      {% if not request.registry.settings["tildes.open_registration"] %}
+        <li class="nav-item {{ 'active' if route == 'invite' else '' }}">
+          {% if request.user.invite_codes_remaining %}<strong>{% endif %}
+          <a href="/invite">
+            Invite someone {% if request.user.invite_codes_remaining %}({{ request.user.invite_codes_remaining }}){% endif %}
+          </a>
+          {% if request.user.invite_codes_remaining %}</strong>{% endif %}
+        </li>
+      {% endif %}
       <li class="nav-item {{ 'active' if route == 'settings' else '' }}">
         <a href="/settings">
           Settings
