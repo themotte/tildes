@@ -98,11 +98,6 @@
     </header>
 
     {% if request.has_permission('view', comment) %}
-      {# Show votes at the top only if it's your own comment #}
-      {% if request.user == comment.user and comment.num_votes > 0 and not comment.is_removed %}
-        <div class="comment-votes">{{ pluralize(comment.num_votes, "vote") }}</div>
-      {% endif %}
-
       {% if comment.is_label_active("exemplary") and request.has_permission("view_exemplary_reasons", comment) %}
         <details class="comment-exemplary-reasons">
           <summary><span class="label label-comment label-comment-exemplary">Exemplary</span>
@@ -153,11 +148,6 @@
       </div>
 
       <menu class="btn-post">
-        {# Show non-button vote count if the viewer can't vote and it's not their comment #}
-        {% if not request.has_permission("vote", comment) and comment.num_votes > 0 and comment.user != request.user %}
-          <div class="comment-votes">{{ pluralize(comment.num_votes, "vote") }}</div>
-        {% endif %}
-
         {% if request.has_permission('vote', comment) %}
           <li>{{ post_action_toggle_button("vote", comment, is_toggled=comment.user_voted) }}</li>
         {% endif %}

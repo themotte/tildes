@@ -170,6 +170,7 @@
         ) }}"
         data-ic-replace-target="true"
       >
+      Vote
     {% else %}
       <button class="btn topic-voting"
         data-ic-put-to="{{ request.route_url(
@@ -178,23 +179,11 @@
         ) }}"
         data-ic-replace-target="true"
       >
+      Voted
     {% endif %}
   {% else %}
     <div class="topic-voting">
   {% endif %}
-
-  {# Hide voting from the topic's author if it has zero votes #}
-  {% if request.user != topic.user or topic.num_votes > 0 %}
-    <span class="topic-voting-votes">{{ topic.num_votes }}</span>
-    <span class="topic-voting-label">
-    {% trans num_votes=topic.num_votes %}
-    vote
-    {% pluralize %}
-    votes
-    {% endtrans %}
-    </span>
-  {% endif %}
-
   {% if request.has_permission('vote', topic) %}
     </button>
   {% else %}
