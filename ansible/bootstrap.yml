@@ -1,0 +1,10 @@
+---
+- hosts: servers
+  remote_user: root
+  tasks:
+    - name: Install salt-minion
+      apt: name=salt-minion state=present
+    - name: Install python-pip
+      apt: name=python-pip state=present
+    - name: Create ~tildes (With a shell, so humans can hack.)
+      user: name=tildes shell=/bin/bash
