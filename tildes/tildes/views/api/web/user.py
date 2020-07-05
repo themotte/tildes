@@ -187,22 +187,6 @@ def patch_change_show_tags_in_listings(request: Request) -> Response:
 @ic_view_config(
     route_name="user",
     request_method="PATCH",
-    request_param="ic-trigger-name=account-default-comment-sort-order",
-    permission="change_settings",
-)
-def patch_change_comment_sort_order(request: Request) -> Response:
-    """Change the user's default comment sort order setting."""
-    user = request.context
-
-    comment_sort_order = request.params.get("comment-sort-order")
-    user.comment_sort_order_default = comment_sort_order
-
-    return IC_NOOP
-
-
-@ic_view_config(
-    route_name="user",
-    request_method="PATCH",
     request_param="ic-trigger-name=auto-mark-notifications-read",
     permission="change_settings",
 )
