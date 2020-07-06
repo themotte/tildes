@@ -9,12 +9,17 @@ import sentry_sdk
 from marshmallow.exceptions import ValidationError
 from paste.deploy.config import PrefixMiddleware
 from pyramid.config import Configurator
+from pyramid.settings import asbool
 from sentry_sdk.integrations.pyramid import PyramidIntegration
 from webassets import Bundle
 
 
 def main(global_config: Dict[str, str], **settings: str) -> PrefixMiddleware:
     """Configure and return a Pyramid WSGI application."""
+    settings["tildes.open_registration"] = asbool(
+        settings.get("tildes.open_registration", "false")
+    )
+
     config = Configurator(settings=settings)
 
     config.include("cornice")

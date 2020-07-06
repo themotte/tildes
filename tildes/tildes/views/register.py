@@ -3,6 +3,8 @@
 
 """Views related to registration."""
 
+from typing import Optional
+
 from marshmallow.fields import String
 from pyramid.httpexceptions import HTTPFound, HTTPUnprocessableEntity
 from pyramid.request import Request
@@ -51,7 +53,7 @@ def user_schema_check_breaches(request: Request) -> UserSchema:
 )
 @use_kwargs(user_schema_check_breaches)
 @use_kwargs(
-    {"invite_code": String(required=True), "password_confirm": String(required=True)}
+    {"invite_code": String(required=False), "password_confirm": String(required=True)}
 )
 @not_logged_in
 @rate_limit_view("register")
@@ -71,26 +73,12 @@ def post_register(
     if password != password_confirm:
         raise HTTPUnprocessableEntity("Password and confirmation do not match.")
 
-    # attempt to fetch and lock the row for the specified invite code (lock prevents
-    # concurrent requests from using the same invite code)
-    lookup_code = UserInviteCode.prepare_code_for_lookup(invite_code)
-    code_row = (
-        request.query(UserInviteCode)
-        .filter(
-            UserInviteCode.code == lookup_code,
-            UserInviteCode.invitee_id == None,  # noqa
-        )
-        .with_for_update(skip_locked=True)
-        .one_or_none()
-    )
-
-    if not code_row:
-        incr_counter("invite_code_failures")
-        raise HTTPUnprocessableEntity("Invalid invite code")
+    code_row = _handle_invite_code(request, invite_code)
 
     # create the user and set inviter to the owner of the invite code
     user = User(username, password)
-    user.inviter_id = code_row.user_id
+    if code_row:
+        user.inviter_id = code_row.user_id
 
     # flush the user insert to db, will fail if username is already taken
     request.db_session.add(user)
@@ -101,7 +89,8 @@ def post_register(
 
     # the flush above will generate the new user's ID, so use that to update the invite
     # code with info about the user that registered with it
-    code_row.invitee_id = user.user_id
+    if code_row:
+        code_row.invitee_id = user.user_id
 
     # subscribe the new user to all groups except ~test
     all_groups = request.query(Group).all()
@@ -139,3 +128,27 @@ def _send_welcome_message(recipient: User, request: Request) -> None:
         sender, recipient, WELCOME_MESSAGE_SUBJECT, WELCOME_MESSAGE_TEXT
     )
     request.db_session.add(welcome_message)
+
+
+def _handle_invite_code(request: Request, invite_code: str) -> Optional[UserInviteCode]:
+    # invite code not required -- leave empty
+    if request.registry.settings["tildes.open_registration"]:
+        return None
+
+    # attempt to fetch and lock the row for the specified invite code (lock prevents
+    # concurrent requests from using the same invite code)
+    lookup_code = UserInviteCode.prepare_code_for_lookup(invite_code)
+    code_row = (
+        request.query(UserInviteCode)
+        .filter(
+            UserInviteCode.code == lookup_code,
+            UserInviteCode.invitee_id == None,  # noqa
+        )
+        .with_for_update(skip_locked=True)
+        .one_or_none()
+    )
+
+    if not code_row:
+        incr_counter("invite_code_failures")
+        raise HTTPUnprocessableEntity("Invalid invite code")
+    return code_row

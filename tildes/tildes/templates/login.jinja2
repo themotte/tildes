@@ -34,9 +34,15 @@
     </div>
   </form>
 
+  {% if request.registry.settings["tildes.open_registration"] %}
+    <p class="text-small"><a href="/register">Register a new account.</a></p>
+  {% endif %}
+
   <hr>
 
-  <p class="text-small">Tildes is currently in invite-only alpha, and you must be invited to be able to register. Most of the existing users have the ability to invite others, so if you know someone that has an account, you can ask them for an invite. Otherwise, please <a href="https://blog.tildes.net/announcing-tildes">read the announcement blog post</a> for more info about the site and instructions for requesting an invite from the site admin.</p>
+  {% if not request.registry.settings["tildes.open_registration"] %}
+    <p class="text-small">Tildes is currently in invite-only alpha, and you must be invited to be able to register. Most of the existing users have the ability to invite others, so if you know someone that has an account, you can ask them for an invite. Otherwise, please <a href="https://blog.tildes.net/announcing-tildes">read the announcement blog post</a> for more info about the site and instructions for requesting an invite from the site admin.</p>
+  {% endif %}
 
   <p class="text-small">If you already have a Tildes account but have forgotten your password, please send an email (you must include your username) to <a href="mailto:password@tildes.net">password@tildes.net</a>.</p>
 {% endblock %}
