@@ -26,9 +26,6 @@ server {
     }
     rewrite ^/(.*)/$ https://$host$port/$1 permanent;
 
-    # redirect /donate to the page on the Docs site
-    rewrite ^/donate$ https://docs.tildes.net/donate redirect;
-
     # redirect /u/username to /user/username
     rewrite ^/u/(.*)$ https://$host$port/user/$1;
 
@@ -95,15 +92,3 @@ server {
         proxy_pass http://app_server;
     }
 }
-
-{% if grains["id"] == "prod" %}
-# redirect www. to base domain
-server {
-    listen 80;
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-
-    server_name www.tildes.net;
-    return 301 https://tildes.net$request_uri;
-}
-{% endif %}

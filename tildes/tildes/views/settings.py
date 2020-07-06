@@ -60,14 +60,7 @@ def get_settings(request: Request) -> dict:
         theme_options[user_default_theme] += " (account default)"
         theme_options[site_default_theme] += " (site default)"
 
-    if request.user.comment_sort_order_default:
-        current_comment_sort_order = request.user.comment_sort_order_default
-    else:
-        current_comment_sort_order = CommentTreeSortOption.RELEVANCE
-
     return {
-        "current_comment_sort_order": current_comment_sort_order,
-        "comment_sort_order_options": CommentTreeSortOption,
         "theme_options": theme_options,
     }
 
@@ -236,9 +229,7 @@ def get_settings_theme_previews(request: Request) -> dict:
     for fake_comment in fake_comments:
         fake_comment.num_votes = 0
 
-    fake_tree = CommentTree(
-        fake_comments, CommentTreeSortOption.RELEVANCE, request.user
-    )
+    fake_tree = CommentTree(fake_comments, CommentTreeSortOption.NEWEST, request.user)
 
     # add a fake Exemplary label to the first child comment
     fake_comments[1].labels = [

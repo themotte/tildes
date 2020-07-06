@@ -234,25 +234,6 @@
         <button class="btn btn-sm btn-light" data-js-comment-expand-all-button>Expand all</button>
       </div>
 
-      <form class="form-listing-options" method="get">
-        <div class="form-group">
-          <label for="comment_order">Comments sorted by</label>
-          <select id="comment_order" name="comment_order" class="form-select" data-js-autosubmit-on-change>
-            {% for option in comment_order_options %}
-              <option value="{{ option.name.lower() }}"
-
-              {% if option == comment_order %}
-                selected
-              {% endif %}
-              >{{ option.description }}</option>
-            {% endfor %}
-          </select>
-          {# add a submit button for people with js disabled so this is still usable #}
-          <noscript>
-            <button type="submit" class="btn btn-primary btn-sm">OK</button>
-          </noscript>
-        </div>
-      </form>
     </header>
   {% endif %}
 

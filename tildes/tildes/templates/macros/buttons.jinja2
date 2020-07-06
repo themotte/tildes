@@ -37,12 +37,6 @@
   {% elif name == "vote" %}
     {% set normal_label = "Vote" %}
     {% set toggled_label = "Voted" %}
-
-    {% if subject.num_votes > 0 %}
-      {# Append the vote count in parentheses #}
-      {% set normal_label = normal_label~" ("~subject.num_votes~")" %}
-      {% set toggled_label = toggled_label~" ("~subject.num_votes~")" %}
-    {% endif %}
   {% endif %}
 
   {% if not is_toggled %}
