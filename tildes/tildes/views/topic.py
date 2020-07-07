@@ -223,7 +223,7 @@ def get_group_topics(  # noqa
     topics = query.get_page(per_page)
 
     # don't show pinned topics on home page
-    if request.matched_route.name == 'home':
+    if request.matched_route.name == "home":
         pinned_topics = []
     else:
         # get pinned topics
@@ -293,7 +293,7 @@ def get_group_topics(  # noqa
         "group": request.context,
         "groups": groups,
         "topics": topics,
-        'pinned_topics': pinned_topics,
+        "pinned_topics": pinned_topics,
         "order": order,
         "order_options": TopicSortOption,
         "period": period,

@@ -172,20 +172,22 @@
   {% endfor %}
 
   {% for topic in topics: %}
-    <li>
+    {% if not topic.is_pinned %}
+      <li>
 
-    {# only display the rank on topics if the rank_start variable is set #}
-    {% if rank_start is defined and rank_start is not none %}
-      {{ render_topic_for_listing(
-          topic,
-          show_group=topic.group != request.context,
-          rank=rank_start + loop.index0,
-      ) }}
-    {% else %}
-      {{ render_topic_for_listing(topic, show_group=topic.group != request.context) }}
+      {# only display the rank on topics if the rank_start variable is set #}
+      {% if rank_start is defined and rank_start is not none %}
+        {{ render_topic_for_listing(
+            topic,
+            show_group=topic.group != request.context,
+            rank=rank_start + loop.index0,
+        ) }}
+      {% else %}
+        {{ render_topic_for_listing(topic, show_group=topic.group != request.context) }}
+      {% endif %}
+
+      </li>
     {% endif %}
-
-    </li>
   {% endfor %}
 
   </ol>

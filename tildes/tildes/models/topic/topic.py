@@ -122,7 +122,7 @@ class Topic(DatabaseModel):
     tags: List[str] = Column(TagList, nullable=False, server_default="{}")
     is_official: bool = Column(Boolean, nullable=False, server_default="false")
     is_locked: bool = Column(Boolean, nullable=False, server_default="false")
-    is_pinned: bool = Column(Boolean, nullable=False, server_default='false')
+    is_pinned: bool = Column(Boolean, nullable=False, server_default="false")
     search_tsv: Any = deferred(Column(TSVECTOR))
 
     user: User = relationship("User", lazy=False, innerjoin=True)
@@ -242,6 +242,9 @@ class Topic(DatabaseModel):
         new_topic.link = link
 
         return new_topic
+
+    def _update_creation_metric(self) -> None:
+        incr_counter("topics", type=self.topic_type.name.lower())
 
     def __acl__(self) -> AclType:  # noqa
         """Pyramid security ACL."""

@@ -318,9 +318,7 @@ def delete_topic_lock(request: Request) -> dict:
 
 
 @ic_view_config(
-    route_name='topic_pin',
-    request_method='PUT',
-    permission='pin',
+    route_name="topic_pin", request_method="PUT", permission="pin",
 )
 def pin_topic(request: Request) -> Response:
     """Pin a topic with Intercooler."""
@@ -329,13 +327,11 @@ def pin_topic(request: Request) -> Response:
     topic.is_pinned = True
     request.db_session.add(LogTopic(LogEventType.TOPIC_PINNED, request, topic))
 
-    return Response('Pinned')
+    return Response("Pinned")
 
 
 @ic_view_config(
-    route_name='topic_pin',
-    request_method='DELETE',
-    permission='pin',
+    route_name="topic_pin", request_method="DELETE", permission="pin",
 )
 def unpin_topic(request: Request) -> Response:
     """Unpin a topic with Intercooler."""
@@ -344,14 +340,14 @@ def unpin_topic(request: Request) -> Response:
     topic.is_pinned = False
     request.db_session.add(LogTopic(LogEventType.TOPIC_UNPINNED, request, topic))
 
-    return Response('Unpinned')
+    return Response("Unpinned")
 
 
 @ic_view_config(
-    route_name='topic_title',
-    request_method='GET',
-    renderer='topic_title_edit.jinja2',
-    permission='edit_title',
+    route_name="topic_title",
+    request_method="GET",
+    renderer="topic_title_edit.jinja2",
+    permission="edit_title",
 )
 def get_topic_title(request: Request) -> dict:
     """Get the form for editing a topic's title with Intercooler."""
