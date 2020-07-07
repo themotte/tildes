@@ -207,6 +207,30 @@
         </div>
       </li>
     {% endif %}
+
+    {% if request.has_permission('pin', topic) %}
+      <li>
+      {% if not topic.is_pinned %}
+        <a class="post-button"
+          data-ic-put-to="{{ request.route_url(
+            'ic_topic_pin',
+            topic_id36=topic.topic_id36,
+          ) }}"
+          data-ic-replace-target="true"
+          data-ic-confirm="Pin this topic?"
+        >Pin</a>
+      {% else %}
+        <a class="post-button"
+          data-ic-delete-from="{{ request.route_url(
+            'ic_topic_pin',
+            topic_id36=topic.topic_id36,
+          ) }}"
+          data-ic-replace-target="true"
+          data-ic-confirm="Unpin this topic?"
+        >Unpin</a>
+      {% endif %}
+      </li>
+    {% endif %}
   </menu>
   <div class="btn-post-settings"></div>
 

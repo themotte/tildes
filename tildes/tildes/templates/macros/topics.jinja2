@@ -224,6 +224,9 @@
 
   {% if topic.content_excerpt %}
     {% do classes.append("topic-with-excerpt") %}
+
+  {% if topic.is_pinned %}
+    {% do classes.append('is-topic-pinned') %}
   {% endif %}
 
   {{ classes|join(' ') }}

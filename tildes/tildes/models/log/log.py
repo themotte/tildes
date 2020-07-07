@@ -167,6 +167,10 @@ class LogTopic(DatabaseModel, BaseLog):
             old_link = self.info["old"]
             new_link = self.info["new"]
             return f"changed link from {old_link} to {new_link}"
+        elif self.event_type == LogEventType.TOPIC_PINNED:
+            return 'pinned topic'
+        elif self.event_type == LogEventType.TOPIC_UNPINNED:
+            return 'unpinned topic'
 
         return f"performed action {self.event_type.name}"
 

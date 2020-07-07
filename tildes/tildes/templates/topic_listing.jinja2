@@ -138,7 +138,7 @@
   </div>
 {% endif %}
 
-{% if not topics %}
+{% if not topics and not pinned_topics %}
   <div class="empty">
     {% if period %}
       <h2 class="empty-title">No topics in the selected time period</h2>
@@ -156,12 +156,20 @@
   </div>
 {% endif %}
 
-{% if topics %}
+{% if topics or pinned_topics %}
   <ol class="topic-listing"
   {% if rank_start is defined and rank_start is not none %}
     start="{{ rank_start }}"
   {% endif %}
   >
+
+  {% for topic in pinned_topics %}
+    <li>
+    {{ render_topic_for_listing(
+      topic,
+      show_group=topic.group != request.context,
+    ) }}
+  {% endfor %}
 
   {% for topic in topics: %}
     <li>

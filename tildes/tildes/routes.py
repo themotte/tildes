@@ -149,6 +149,7 @@ def add_intercooler_routes(config: Configurator) -> None:
         add_ic_route("topic_tags", "/tags", factory=topic_by_id36)
         add_ic_route("topic_bookmark", "/bookmark", factory=topic_by_id36)
         add_ic_route("topic_ignore", "/ignore", factory=topic_by_id36)
+        add_ic_route("topic_pin", "/pin", factory=topic_by_id36)
 
     add_ic_route("comment", "/comments/{comment_id36}", factory=comment_by_id36)
     with config.route_prefix_context("/comments/{comment_id36}"):
