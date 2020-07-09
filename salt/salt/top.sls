@@ -18,7 +18,7 @@ base:
     - prometheus.exporters.node_exporter
     - prometheus.exporters.postgres_exporter
     - prometheus.exporters.redis_exporter
-  #  - consumers
+    - consumers
     - tildes-wiki
     - boussole
     - webassets
@@ -28,13 +28,13 @@ base:
     - postgresql.test-db
     - self-signed-cert
     - development
-  #  - prometheus
-  #  - nodejs
+    - prometheus
+    - nodejs
   'prod':
     - nginx.shortener-config
     - nginx.static-sites-config
     - postgresql.prod-config
-  #  - prod-config
+    - prod-config
   'monitoring':
     - nginx
     - self-signed-cert

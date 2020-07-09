@@ -5,7 +5,8 @@ VAGRANT_CONFIG_VERSION = "2"
 
 Vagrant.configure(VAGRANT_CONFIG_VERSION) do |config|
   # This should correspond to apt_distro in `salt/pillar`
-  config.vm.box = "ubuntu/bionic64"
+  # Must support libvirt for travis-ci testing
+  config.vm.box = "generic/ubuntu1804"
 
   # Main application folder
   config.vm.synced_folder "tildes/", "/opt/tildes/"
