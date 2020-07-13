@@ -22,13 +22,6 @@ install:
 
 script:
   - vagrant up --provider=libvirt
-  
-  # Not sure why this isn't triggering automatically.
-  # Some step before this is creating the relevant directories with root ownership. I'm not sure if that should be happening.
-  # (It's possible this isn't triggering because it can't write to the directories.)
-  # We do it manually in order to generate the files we need, but to do so, we need to be running as root.
-  # Maybe this is a bug in Tildes's setup?
-  - vagrant ssh -c ". activate && sudo /opt/venvs/tildes/bin/python -c 'from scripts.generate_site_icons_css import generate_css; generate_css()'"
 
   # This would be faster if we did it in one ssh call, but we also wouldn't get per-call status results.
   - vagrant ssh -c ". activate && pytest"
