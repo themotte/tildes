@@ -236,9 +236,9 @@
 {% macro topic_tag(tag, link=None) %}
   <li class="label label-topic-tag label-topic-tag-{{ tag.replace(' ', '_').replace('.', '-') }}">
     {% if link %}
-      <a href="{{ link }}">{{ tag }}</a>
+      <a class="chip" href="{{ link }}">{{ tag }}</a>
     {% else %}
-      {{ tag }}
+      <span class="chip">{{ tag }}</span>
     {% endif %}
   </li>
 {% endmacro %}

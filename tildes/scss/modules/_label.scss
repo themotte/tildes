@@ -14,13 +14,9 @@
 
 .label-topic-tag {
   background-color: transparent;
-  margin: 0 0.4rem 0 0;
+  margin: 0;
   word-wrap: break-word;
   max-width: 100%;
-
-  & + & {
-    margin-left: 0.2rem;
-  }
 }
 
 .label-topic-tag-spoiler,
