@@ -1,0 +1,36 @@
+// Contains the default Tildes theme
+$motte-theme: (
+    "alert": #e66b00,
+    "background-primary": #fff,
+    "background-secondary": #cee3f8ee,
+    "border": #ccc,
+    "button": #1460aa,
+    "comment-label-exemplary": #1460aa,
+    "comment-label-joke": #4b6319,
+    "comment-label-noise": #856514,
+    "comment-label-offtopic": #1e824c,
+    "comment-label-malice": #d91e18,
+    "error": #d91e18,
+    "foreground-highlight": #222,
+    "foreground-primary": #333,
+    "foreground-secondary": #888,
+    "link": #0030e0,
+    "link-visited": #551a8b,
+    "stripe-target": #ffd700,
+    "success": $success-color,
+    "syntax-builtin": #268bd2,
+    "syntax-comment": #129b12,
+    "syntax-constant": #dc322f,
+    "syntax-keyword": #3329c2,
+    "syntax-literal": #2aa198,
+    "syntax-string": #2aa198,
+    "topic-tag-spoiler": #e66b00,
+    "warning": #e66b00
+);
+
+// define the default theme using the base values
+body.theme-motte {
+    @include use-theme($motte-theme);
+}
+
+@include theme-preview-block($motte-theme, "motte");
