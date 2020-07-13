@@ -1,0 +1,38 @@
+dist: bionic
+language: python
+
+install:
+  # Install libvirt and KVM.
+  - sudo apt-get update
+  - sudo apt-get install -y bridge-utils dnsmasq-base ebtables libvirt-bin libvirt-dev qemu-kvm qemu-utils ruby-dev
+  
+  # Out of the box, libvirt is configured so that users have to be added to the libvirt group in order to use it.
+  # This is a very elegant design; unfortunately we can't seem to add the travis user to the libvirt group properly (newgrp halts, maybe waiting for console input?)
+  # Instead, we change libvirt's configuration to consider the already-existing travis group the authorized group.
+  # We did all this to fix permission problems with the setup, but it didn't even help. Oh well.
+  - sudo sed -i 's/unix_sock_group = "libvirt"/unix_sock_group = "travis"/' /etc/libvirt/libvirtd.conf
+  - sudo systemctl restart libvirtd.service
+
+  # Download and install Vagrant
+  - wget -nv https://releases.hashicorp.com/vagrant/2.2.9/vagrant_2.2.9_x86_64.deb
+  - sudo dpkg -i vagrant_2.2.9_x86_64.deb
+
+  # Install libvirt Vagrant plugin
+  - vagrant plugin install vagrant-libvirt
+
+script:
+  - vagrant up --provider=libvirt
+  
+  # Not sure why this isn't triggering automatically.
+  # Some step before this is creating the relevant directories with root ownership. I'm not sure if that should be happening.
+  # (It's possible this isn't triggering because it can't write to the directories.)
+  # We do it manually in order to generate the files we need, but to do so, we need to be running as root.
+  # Maybe this is a bug in Tildes's setup?
+  - vagrant ssh -c ". activate && sudo /opt/venvs/tildes/bin/python -c 'from scripts.generate_site_icons_css import generate_css; generate_css()'"
+
+  # This would be faster if we did it in one ssh call, but we also wouldn't get per-call status results.
+  - vagrant ssh -c ". activate && pytest"
+  - vagrant ssh -c ". activate && mypy ."
+  - vagrant ssh -c ". activate && black --check ."
+  - vagrant ssh -c ". activate && prospector"
+  - vagrant ssh -c ". activate && npm run lint"
