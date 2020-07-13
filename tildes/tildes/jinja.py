@@ -46,9 +46,10 @@ def includeme(config: Configurator) -> None:
     config.add_jinja2_extension("jinja2.ext.do")
     config.add_jinja2_extension("webassets.ext.jinja2.AssetsExtension")
 
-    # attach webassets to jinja2 environment (via scheduled action)
-    def attach_webassets_to_jinja2() -> None:
+    # attach webassets to jinja2 and set SITE_NAME global (via scheduled action)
+    def setup_jinja_env() -> None:
         jinja2_env = config.get_jinja2_environment()
         jinja2_env.assets_environment = config.get_webassets_env()
+        jinja2_env.globals["SITE_NAME"] = settings["tildes.site_name"]
 
-    config.action(None, attach_webassets_to_jinja2, order=999)
+    config.action(None, setup_jinja_env, order=999)

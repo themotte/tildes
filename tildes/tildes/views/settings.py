@@ -158,8 +158,10 @@ def get_settings_theme_previews(request: Request) -> dict:
     fake_user = request.query(User).filter(User.user_id == -1).one()
     group = request.query(Group).order_by(func.random()).limit(1).one()
 
+    site_name = request.registry.settings["tildes.site_name"]
+
     fake_link_topic = Topic.create_link_topic(
-        group, fake_user, "Example Link Topic", "https://tildes.net/"
+        group, fake_user, "Example Link Topic", f"https://{site_name}/"
     )
 
     fake_text_topic = Topic.create_text_topic(
@@ -182,7 +184,7 @@ def get_settings_theme_previews(request: Request) -> dict:
     # create a fake top-level comment that appears to be written by the user
     markdown = (
         "This is what a regular comment written by yourself would look like.\n\n"
-        "It has **formatting** and a [link](https://tildes.net)."
+        f"It has **formatting** and a [link](https://{site_name})."
     )
     fake_top_comment = Comment(fake_link_topic, request.user, markdown)
     fake_top_comment.comment_id = sys.maxsize

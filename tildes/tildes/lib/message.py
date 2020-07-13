@@ -9,20 +9,20 @@ WELCOME_MESSAGE_SUBJECT = "Welcome to the Tildes alpha"
 WELCOME_MESSAGE_TEXT = """
 Hi, welcome to the Tildes alpha!
 
-If you haven't already, please read [the announcement post](https://blog.tildes.net/announcing-tildes) on the blog, since that explains a lot of the general goals and plans for the site.
+If you haven't already, please read [the announcement post](https://blog.{site_name}/announcing-tildes) on the blog, since that explains a lot of the general goals and plans for the site.
 
 Some quick information that should help with getting started:
 
 # Read about the basic mechanics
 
-There's a page on the Docs site that explains the basic mechanics on Tildes: https://docs.tildes.net/mechanics
+There's a page on the Docs site that explains the basic mechanics on Tildes: https://docs.{site_name}/mechanics
 
 # Check your user page sidebar
 
 There are multiple useful links in the sidebar on your user page&mdash;get there by clicking your username in the top right, or in the sidebar if you're on mobile. You can access the settings page from there, which includes multiple things you'll probably want to do:
 
 * Check the available options for display themes (including dark themes)
-* [Set up account recovery in case you lose access to your account](https://tildes.net/settings/account_recovery)
+* [Set up account recovery in case you lose access to your account](https://{site_name}/settings/account_recovery)
 
 # Please post topics and comments
 
