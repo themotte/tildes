@@ -6,6 +6,7 @@ VAGRANT_CONFIG_VERSION = "2"
 Vagrant.configure(VAGRANT_CONFIG_VERSION) do |config|
   # This should correspond to apt_distro in `salt/pillar`
   # Must support libvirt for travis-ci testing
+  # 18.04 = bionic, this is just a Vagrant-provided image that's libvirt-compatible
   config.vm.box = "generic/ubuntu1804"
 
   # Main application folder
