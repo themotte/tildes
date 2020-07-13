@@ -240,3 +240,7 @@ class TopicQuery(PaginatedQuery):
         self.filter_ignored = True
 
         return self
+
+    def is_pinned(self, pinned: bool) -> "TopicQuery":
+        """Restrict the topics to be pinned or unpinned."""
+        return self.filter(Topic.is_pinned == pinned)

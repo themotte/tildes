@@ -37,6 +37,9 @@
   {% elif name == "vote" %}
     {% set normal_label = "Vote" %}
     {% set toggled_label = "Voted" %}
+  {% elif name == "pin" %}
+    {% set normal_label = "Pin" %}
+    {% set toggled_label = "Unpin" %}
   {% endif %}
 
   {% if not is_toggled %}

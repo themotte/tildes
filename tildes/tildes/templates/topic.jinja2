@@ -180,6 +180,10 @@
       <li>{{ post_action_toggle_button("remove", topic, topic.is_removed) }}</li>
     {% endif %}
 
+    {% if request.has_permission('pin', topic) %}
+      <li>{{ post_action_toggle_button("pin", topic, topic.is_pinned) }}</li>
+    {% endif %}
+
     {# Only show "View Markdown" (and dropdown) when it's a text topic and the user is
        allowed to view the content, but can't edit it #}
     {% if topic.is_text_type
@@ -207,6 +211,7 @@
         </div>
       </li>
     {% endif %}
+
   </menu>
   <div class="btn-post-settings"></div>
 

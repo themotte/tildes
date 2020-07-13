@@ -122,6 +122,7 @@ class Topic(DatabaseModel):
     tags: List[str] = Column(TagList, nullable=False, server_default="{}")
     is_official: bool = Column(Boolean, nullable=False, server_default="false")
     is_locked: bool = Column(Boolean, nullable=False, server_default="false")
+    is_pinned: bool = Column(Boolean, nullable=False, server_default="false")
     search_tsv: Any = deferred(Column(TSVECTOR))
 
     user: User = relationship("User", lazy=False, innerjoin=True)
@@ -257,6 +258,7 @@ class Topic(DatabaseModel):
         acl.extend(aces_for_permission("topic.move", self.group_id))
         acl.extend(aces_for_permission("topic.remove", self.group_id))
         acl.extend(aces_for_permission("topic.lock", self.group_id))
+        acl.extend(aces_for_permission("topic.pin", self.group_id))
 
         # view:
         #  - everyone gets "general" viewing permission for all topics

@@ -145,30 +145,26 @@ class LogTopic(DatabaseModel, BaseLog):
 
     def __str__(self) -> str:
         """Return a string representation of the log event."""
+        old = self.info["old"]
+        new = self.info["new"]
+        dispatch = {
+            LogEventType.TOPIC_MOVE: f"moved from ~{old} to ~{new}",
+            LogEventType.TOPIC_TITLE_EDIT: f'changed title from "{old}" to "{new}"',
+            LogEventType.TOPIC_LINK_EDIT: f"changed link from {old} to {new}",
+            LogEventType.TOPIC_LOCK: "locked comments",
+            LogEventType.TOPIC_REMOVE: "removed",
+            LogEventType.TOPIC_UNLOCK: "unlocked comments",
+            LogEventType.TOPIC_UNREMOVE: "un-removed",
+            LogEventType.TOPIC_PINNED: "pinned topic",
+            LogEventType.TOPIC_UNPINNED: "unpinned topic",
+        }
+
         if self.event_type == LogEventType.TOPIC_TAG:
             return self._tag_event_description()
-        elif self.event_type == LogEventType.TOPIC_MOVE:
-            old_group = self.info["old"]
-            new_group = self.info["new"]
-            return f"moved from ~{old_group} to ~{new_group}"
-        elif self.event_type == LogEventType.TOPIC_LOCK:
-            return "locked comments"
-        elif self.event_type == LogEventType.TOPIC_REMOVE:
-            return "removed"
-        elif self.event_type == LogEventType.TOPIC_UNLOCK:
-            return "unlocked comments"
-        elif self.event_type == LogEventType.TOPIC_UNREMOVE:
-            return "un-removed"
-        elif self.event_type == LogEventType.TOPIC_TITLE_EDIT:
-            old_title = self.info["old"]
-            new_title = self.info["new"]
-            return f'changed title from "{old_title}" to "{new_title}"'
-        elif self.event_type == LogEventType.TOPIC_LINK_EDIT:
-            old_link = self.info["old"]
-            new_link = self.info["new"]
-            return f"changed link from {old_link} to {new_link}"
-
-        return f"performed action {self.event_type.name}"
+        elif self.event_type in dispatch:
+            return dispatch[self.event_type]
+        else:
+            return f"performed action {self.event_type.name}"
 
     def _tag_event_description(self) -> str:
         """Return a description of a TOPIC_TAG event as a string."""

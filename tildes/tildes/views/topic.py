@@ -222,6 +222,21 @@ def get_group_topics(  # noqa
 
     topics = query.get_page(per_page)
 
+    # don't show pinned topics on home page
+    if request.matched_route.name == "home":
+        pinned_topics = []
+    else:
+        # get pinned topics
+        pinned_query = (
+            request.query(Topic)
+            .join_all_relationships()
+            .inside_groups(groups)
+            .is_pinned(True)
+            .apply_sort_option(order)
+        )
+
+        pinned_topics = pinned_query.all()
+
     period_options = [SimpleHoursPeriod(hours) for hours in (1, 12, 24, 72, 168)]
 
     # add the current period to the bottom of the dropdown if it's not one of the
@@ -278,6 +293,7 @@ def get_group_topics(  # noqa
         "group": request.context,
         "groups": groups,
         "topics": topics,
+        "pinned_topics": pinned_topics,
         "order": order,
         "order_options": TopicSortOption,
         "period": period,
@@ -417,10 +433,12 @@ def get_topic(request: Request) -> dict:
         LogEventType.TOPIC_LOCK,
         LogEventType.TOPIC_MOVE,
         LogEventType.TOPIC_REMOVE,
+        LogEventType.TOPIC_PINNED,
         LogEventType.TOPIC_TAG,
         LogEventType.TOPIC_TITLE_EDIT,
         LogEventType.TOPIC_UNLOCK,
         LogEventType.TOPIC_UNREMOVE,
+        LogEventType.TOPIC_UNPINNED,
     )
     log = (
         request.query(LogTopic)

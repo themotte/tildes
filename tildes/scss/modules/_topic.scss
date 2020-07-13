@@ -403,3 +403,12 @@
   border-left: 3px solid;
   margin-left: -3px;
 }
+
+.is-topic-pinned {
+  h1 {
+    a,
+    a:visited {
+      color: #12870c;
+    }
+  }
+}
