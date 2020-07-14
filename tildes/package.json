@@ -40,7 +40,7 @@
     "bracketSpacing": false,
     "printWidth": 88,
     "proseWrap": "always",
-    "tabWidth": 4
+    "tabWidth": 2
   },
   "stylelint": {
     "ignoreFiles": [
