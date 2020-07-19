@@ -1,3 +1,11 @@
+# TheMotte Tildes
+
+[![Build Status](https://travis-ci.org/themotte/tildes.svg?branch=master)](https://travis-ci.org/themotte/tildes) [![Support](https://img.shields.io/discord/722487636488486913?label=support&logo=discord)](https://discord.gg/HqEdmq)
+
+This is a fork of [Tildes](https://tildes.net) intended for possible future use by The Motte debate and discussion community. Our home is at [http://www.themotte.org](http://www.themotte.org); development discussion takes place at the above Discord link.
+
+The rest of this readme is left verbatim from Tildes.
+
 # Tildes
 
 This is the code behind [Tildes](https://tildes.net), a non-profit community site. The official repository is located on GitLab at https://gitlab.com/tildes/tildes
