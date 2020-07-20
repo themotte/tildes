@@ -320,7 +320,13 @@ def get_group_topics(  # noqa
     }
 
 
-@view_config(route_name="search", renderer="search.jinja2")
+# Redirect search to group, not preserving any additional information as yet
+@view_config(route_name="search")
+def redirect_to_group_search(request: Request) -> HTTPFound:
+    return HTTPFound(location="/~themotte/search")
+
+
+# @view_config(route_name="search", renderer="search.jinja2")
 @view_config(route_name="group_search", renderer="search.jinja2")
 @use_kwargs(TopicListingSchema(only=("after", "before", "order", "per_page", "period")))
 @use_kwargs({"search": String(data_key="q", missing="")})

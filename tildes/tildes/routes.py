@@ -21,7 +21,7 @@ def includeme(config: Configurator) -> None:
     # In order to achieve a single-group tildes, the groups route is disabled
     # and the home and search routes redirect.
     config.add_route("home", "/")
-    # config.add_view(lambda request: HTTPFound(location="/group/~themotte") , route_name="home")
+
     config.add_route("search", "/search")
 
     config.add_route("financials", "/financials")
