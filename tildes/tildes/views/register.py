@@ -109,6 +109,7 @@ def post_register(
     # redirect to the front page
     raise HTTPFound(location="/")
 
+
 def _handle_invite_code(request: Request, invite_code: str) -> Optional[UserInviteCode]:
     # invite code not required -- leave empty
     if request.registry.settings["tildes.open_registration"]:
