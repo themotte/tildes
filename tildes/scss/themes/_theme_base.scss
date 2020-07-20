@@ -601,6 +601,7 @@
 
   .topic-text-excerpt {
     color: map-get($theme, "foreground-secondary");
+    border-left-color: map-get($theme, "border");
 
     summary::after {
       color: map-get($theme, "foreground-secondary");
