@@ -137,7 +137,13 @@ def post_group_topics(
     raise HTTPFound(location=new_topic.permalink)
 
 
-@view_config(route_name="home", renderer="home.jinja2")
+# Redirect home to group, not preserving any additional information as yet
+@view_config(route_name="home")
+def redirect_to_group(request: Request) -> HTTPFound:
+    return HTTPFound(location="/~themotte")
+
+
+# @view_config(route_name="home", renderer="home.jinja2")
 @view_config(route_name="group", renderer="topic_listing.jinja2")
 @use_kwargs(TopicListingSchema())
 def get_group_topics(  # noqa

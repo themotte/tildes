@@ -18,13 +18,15 @@ from tildes.resources.user import user_by_username
 
 def includeme(config: Configurator) -> None:
     """Set up application routes."""
+    # In order to achieve a single-group tildes, the groups route is disabled
+    # and the home and search routes redirect.
     config.add_route("home", "/")
-
+    # config.add_view(lambda request: HTTPFound(location="/group/~themotte") , route_name="home")
     config.add_route("search", "/search")
 
     config.add_route("financials", "/financials")
 
-    config.add_route("groups", "/groups")
+    # config.add_route("groups", "/groups")
 
     config.add_route("login", "/login")
     config.add_route("login_two_factor", "/login_two_factor")
