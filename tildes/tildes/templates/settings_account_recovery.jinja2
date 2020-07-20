@@ -2,6 +2,7 @@
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 
 {% extends 'base_settings.jinja2' %}
+{% set pass_email = request.registry.settings['tildes.password_email'] %}
 
 {% block title %}Set up account recovery{% endblock %}
 
@@ -15,7 +16,7 @@
 <p>Because of this, the account recovery process has to be initiated differently from most sites:</p>
 
 <ol>
-  <li>If you lose access to your account, send an email from the associated address to <a href="mailto:password@tildes.net">password@tildes.net</a>, requesting a password reset for that specific username.</li>
+  <li>If you lose access to your account, send an email from the associated address to <a href="mailto:{{ pass_email }}">{{ pass_email }}</a>, requesting a password reset for that specific username.</li>
   <li>The sending email address is hashed, and if the result matches the stored hash for that user, a message is sent back (to the same address) that includes a password reset link.</li>
   <li>You receive the email, reset your password, and are able to log into the account again.</li>
 </ol>

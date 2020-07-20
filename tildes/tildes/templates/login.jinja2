@@ -2,6 +2,7 @@
 {# SPDX-License-Identifier: AGPL-3.0-or-later #}
 
 {% extends 'base_no_sidebar.jinja2' %}
+{% set pass_email = request.registry.settings['tildes.password_email'] %}
 
 {% block title %}Log In{% endblock %}
 
@@ -41,8 +42,8 @@
   <hr>
 
   {% if not request.registry.settings["tildes.open_registration"] %}
-    <p class="text-small">Tildes is currently in invite-only alpha, and you must be invited to be able to register. Most of the existing users have the ability to invite others, so if you know someone that has an account, you can ask them for an invite. Otherwise, please <a href="https://blog.tildes.net/announcing-tildes">read the announcement blog post</a> for more info about the site and instructions for requesting an invite from the site admin.</p>
+    <p class="text-small">Tildes is currently in invite-only alpha, and you must be invited to be able to register. Most of the existing users have the ability to invite others, so if you know someone that has an account, you can ask them for an invite. Otherwise, please <a href="https://blog.{{ SITE_NAME }}/announcing-tildes">read the announcement blog post</a> for more info about the site and instructions for requesting an invite from the site admin.</p>
   {% endif %}
 
-  <p class="text-small">If you already have a Tildes account but have forgotten your password, please send an email (you must include your username) to <a href="mailto:password@tildes.net">password@tildes.net</a>.</p>
+  <p class="text-small">If you already have a Tildes account but have forgotten your password, please send an email (you must include your username) to <a href="mailto:{{ pass_email }}">{{ pass_email }}</a>.</p>
 {% endblock %}

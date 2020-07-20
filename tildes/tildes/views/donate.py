@@ -50,6 +50,7 @@ def post_donate_stripe(
         stripe.api_key = request.registry.settings["api_keys.stripe.secret"]
         publishable_key = request.registry.settings["api_keys.stripe.publishable"]
         product_id = request.registry.settings["stripe.recurring_donation_product_id"]
+        site_name = request.registry.settings["tildes.site_name"]
     except KeyError:
         raise HTTPInternalServerError
 
@@ -60,15 +61,15 @@ def post_donate_stripe(
             payment_method_types=["card"],
             line_items=[
                 {
-                    "name": "One-time donation - tildes.net",
+                    "name": f"One-time donation - {site_name}",
                     "amount": int(amount * 100),
                     "currency": currency,
                     "quantity": 1,
                 }
             ],
             submit_type="donate",
-            success_url="https://tildes.net/donate_success",
-            cancel_url="https://docs.tildes.net/donate",
+            success_url=f"https://{site_name}/donate_success",
+            cancel_url=f"https://docs.{site_name}/donate",
         )
     else:
         product = stripe.Product.retrieve(product_id)
@@ -95,8 +96,8 @@ def post_donate_stripe(
         session = stripe.checkout.Session.create(
             payment_method_types=["card"],
             subscription_data={"items": [{"plan": plan.id}]},
-            success_url="https://tildes.net/donate_success",
-            cancel_url="https://docs.tildes.net/donate",
+            success_url=f"https://{site_name}/donate_success",
+            cancel_url=f"https://docs.{site_name}/donate",
         )
 
     return {"publishable_key": publishable_key, "session_id": session.id}

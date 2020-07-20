@@ -124,8 +124,15 @@ def _send_welcome_message(recipient: User, request: Request) -> None:
     if not sender:
         return
 
+    site_name = request.registry.settings.get("tildes.site_name")
+    if not site_name:
+        return
+
     welcome_message = MessageConversation(
-        sender, recipient, WELCOME_MESSAGE_SUBJECT, WELCOME_MESSAGE_TEXT
+        sender,
+        recipient,
+        WELCOME_MESSAGE_SUBJECT,
+        WELCOME_MESSAGE_TEXT.format(site_name=site_name),
     )
     request.db_session.add(welcome_message)
 
