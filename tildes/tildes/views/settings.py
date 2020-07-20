@@ -42,6 +42,7 @@ THEME_OPTIONS = {
     "zenburn": "Zenburn",
     "gruvbox-light": "Gruvbox Light",
     "gruvbox-dark": "Gruvbox Dark",
+    "motte": "The Motte",
 }
 
 
