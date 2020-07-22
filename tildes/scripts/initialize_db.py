@@ -85,7 +85,10 @@ def insert_dev_data(config_path: str) -> None:
     user = User("TestUser", "password")
     group = Group("testing", "An automatically created group to use for testing")
     subscription = GroupSubscription(user, group)
-
-    session.add_all([user, group, subscription])
+    motte_group = Group(
+        "themotte", "Themotte group, automatically created for the dev environment"
+    )
+    motte_subscription = GroupSubscription(user, motte_group)
+    session.add_all([user, group, subscription, motte_group, motte_subscription])
 
     session.commit()
