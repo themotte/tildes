@@ -20,8 +20,8 @@
 {% block filter_info %}
   {% if group %}
     <div class="topic-listing-filter">
-    Search results from inside {{ link_to_group(group) }} only.
-    <a href="{{ request.route_url("search", _query={"q": search}) }}">Search all groups</a>
+    Search results from inside {{ link_to_group(group) }}.
+    {# <a href="{{ request.route_url("search", _query={"q": search}) }}">Search all groups</a> #}
     </div>
   {% endif %}
 {% endblock %}
