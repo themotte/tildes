@@ -4,7 +4,6 @@
 """Views related to groups."""
 
 from pyramid.request import Request
-from pyramid.view import view_config
 
 from tildes.enums import GroupStatType
 from tildes.models.group import Group

@@ -139,8 +139,9 @@ def post_group_topics(
 
 # Redirect home to group, not preserving any additional information as yet
 @view_config(route_name="home")
-def redirect_to_group(request: Request) -> HTTPFound:
-    return HTTPFound(location="/~themotte")
+def redirect_to_group(request: Request) -> HTTPFound:  # noqa
+    """Redirect incoming request to /~themotte."""
+    raise HTTPFound(location="/~themotte")
 
 
 # @view_config(route_name="home", renderer="home.jinja2")
@@ -322,8 +323,9 @@ def get_group_topics(  # noqa
 
 # Redirect search to group, not preserving any additional information as yet
 @view_config(route_name="search")
-def redirect_to_group_search(request: Request) -> HTTPFound:
-    return HTTPFound(location="/~themotte/search")
+def redirect_to_group_search(request: Request) -> HTTPFound:  # noqa
+    """Redirect incoming request to /~themotte/search."""
+    raise HTTPFound(location="/~themotte/search")
 
 
 # @view_config(route_name="search", renderer="search.jinja2")
