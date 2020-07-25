@@ -1,0 +1,115 @@
+---
+- hosts: tildes_server
+  become: yes
+  
+  tasks:
+    - name: Add tildes user
+      user:
+        name: tildes
+
+    - name: Add nginx user
+      user:
+        name: nginx
+
+    - name: Copy the tildes source to the remote server
+      synchronize:
+        src: ../..
+        dest: /home/tildes
+        recursive: yes
+        delete: yes
+        rsync_opts:
+          - "--exclude=.vagrant"
+          - "--exclude=__pycache__"
+          - "--exclude=tildes/node_modules/"
+          # TODO more exclusions
+
+    - name: Create a symbolic link at /opt/tildes
+      file:
+        src: /home/tildes/tildes/tildes
+        dest: /opt/tildes
+        state: link
+
+    - name: Copy production.ini from ansible dir to /opt/tildes/
+      copy:
+        src: production.ini
+        dest: /opt/tildes/production.ini
+
+    - name: Create a symbolic link at /srv/salt
+      file:
+        src: /home/tildes/tildes/salt/salt
+        dest: /srv/salt
+        state: link
+
+    - name: Create a symbolic link at /srv/pillar
+      file:
+        src: /home/tildes/tildes/salt/pillar
+        dest: /srv/pillar
+        state: link
+
+    - name: Copy prod.sls from ansible dir to /srv/pillar
+      copy:
+        src: prod.sls
+        dest: /srv/pillar/prod.sls
+
+    - name: Create the /etc/salt directory
+      file:
+        path: /etc/salt
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Copy the minion file to /etc/salt
+      copy:
+        src: /home/tildes/tildes/salt/minion
+        dest: /etc/salt/minion
+        remote_src: yes
+
+    - name: Set prod environment in the minion
+      lineinfile:
+        path: /etc/salt/minion
+        regexp: '^id: '
+        line: "id: prod"
+
+    - name: Add saltstack signing key
+      apt_key:
+        id: 754A1A7AE731F165D5E6D4BD0E08A149DE57BFBE
+        url: https://repo.saltstack.com/py3/{{ ansible_distribution|lower }}/{{ ansible_distribution_version }}/amd64/latest/SALTSTACK-GPG-KEY.pub
+        state: present
+
+    - name: Add saltstack repository
+      apt_repository:
+        repo: "deb http://repo.saltstack.com/py3/{{ ansible_distribution|lower }}/{{ ansible_distribution_version }}/amd64/latest {{ ansible_distribution_release }} main"
+        filename: 'saltstack'
+        state: present
+
+    - name: Install salt minion
+      apt:
+        name: salt-minion
+        state: present
+        update_cache: true
+
+    - name: Disable the minon service
+      systemd:
+        name: salt-minion
+        enabled: no
+        state: stopped
+
+    - name: Add Let's Encrypt PPA
+      apt_repository:
+        repo: ppa:certbot/certbot
+        state: present
+
+    - name: Install certbot
+      apt:
+        name: python-certbot-nginx
+        state: present
+        update_cache: true
+
+    # TODO Generate certs, other wise next task will fail
+
+    - name: Pass the baton over to salt (this step may take several minutes)
+      command: salt-call --local state.highstate
+      register: salt_output
+
+    # TODO Disable default nginx site? I'm not sure if this is really needed or not
