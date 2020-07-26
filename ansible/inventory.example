@@ -1,2 +1,2 @@
 [tildes_server]
-AddYourServerAddressHere
+YOUR_SERVER_HERE certbot_domains="-d YOUR_DOMAIN_HERE"

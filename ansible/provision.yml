@@ -3,6 +3,29 @@
   become: yes
   
   tasks:
+    - name: Allow SSH through the firewall
+      ufw:
+        rule: allow
+        port: ssh
+        proto: tcp
+
+    - name: Allow HTTP through the firewall
+      ufw:
+        rule: allow
+        port: http
+        proto: tcp
+
+    - name: Allow HTTPS through the firewall
+      ufw:
+        rule: allow
+        port: https
+        proto: tcp
+
+    - name: Turn on the firewall
+      ufw:
+        state: enabled
+        policy: deny
+
     - name: Add tildes user
       user:
         name: tildes
@@ -10,6 +33,8 @@
     - name: Add nginx user
       user:
         name: nginx
+        create_home: no
+        system: yes
 
     - name: Copy the tildes source to the remote server
       synchronize:
@@ -95,7 +120,7 @@
         enabled: no
         state: stopped
 
-    - name: Add Let's Encrypt PPA
+    - name: Add certbot PPA
       apt_repository:
         repo: ppa:certbot/certbot
         state: present
@@ -106,10 +131,13 @@
         state: present
         update_cache: true
 
-    # TODO Generate certs, other wise next task will fail
+    # This feels a little dirty. Can anyone think of any issues this might cause?
+    # It looks like the PPA version of certbot will in fact set up auto-renewal
+    - name: Getting cert from Let's Encrypt
+      command:
+        cmd: certbot certonly --nginx -n {{ certbot_domains }} --preferred-challenges http-01 --register-unsafely-without-email --agree-tos
+        creates: /etc/letsencrypt/live/*/privkey.pem
 
     - name: Pass the baton over to salt (this step may take several minutes)
       command: salt-call --local state.highstate
       register: salt_output
-
-    # TODO Disable default nginx site? I'm not sure if this is really needed or not
