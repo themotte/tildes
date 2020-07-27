@@ -7,7 +7,7 @@
   <div class="group-subscription">
     <span class="group-subscription-count">{{ pluralize(group.num_subscriptions, "subscriber") }}</span>
 
-    {% if request.has_permission('subscribe', group) %}
+    {# {% if request.has_permission('subscribe', group) %}
       {% if group.user_subscribed %}
         <button class="btn btn-sm btn-used"
           data-ic-delete-from="{{ request.route_url(
@@ -27,7 +27,7 @@
           data-ic-replace-target="true"
         >Subscribe</button>
       {% endif %}
-    {% endif %}
+    {% endif %} #}
   </div>
 {% endmacro %}
 
