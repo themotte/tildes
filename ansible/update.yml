@@ -1,0 +1,67 @@
+---
+- hosts: tildes_server
+  become: yes
+  
+  tasks:
+    - name: Taking the website down
+      systemd:
+        name: gunicorn
+        state: stopped
+
+    - name: Copy the tildes source to the remote server
+      synchronize:
+        src: ../..
+        dest: /home/tildes
+        recursive: yes
+        delete: yes
+        rsync_opts:
+          - "--exclude=.vagrant"
+          - "--exclude=Customfile"
+          - "--exclude=__pycache__"
+          - "--exclude=*.py[co]"
+          - "--exclude=pip-wheel-metadata/"
+          - "--exclude=*.egg-info/"
+          - "--exclude=.cache/"
+          - "--exclude=.mypy_cache/"
+          - "--exclude=.webassets-cache/"
+          - "--exclude=.webassets-manifest"
+          - "--exclude=*.gz"
+          - "--exclude=*.log"
+          - "--exclude=tildes/static/css/*"
+          - "--exclude=tildes/static/js/third_party.js"
+          - "--exclude=tildes/static/js/tildes.js"
+          - "--exclude=tildes/node_modules/"
+
+    - name: "Checking for /opt/tildes/production.ini"
+      stat:
+        path: /opt/tildes/production.ini
+      register: st1
+    - fail:
+        msg: "Missing tildes/production.ini. Copy tildes/production.ini.example and fill it out"
+      when: st1.stat.exists != True
+
+    - name: "Checking for /srv/pillar/prod.sls"
+      stat:
+        path: /srv/pillar/prod.sls
+      register: st2
+    - fail:
+        msg: "Missing salt/pillar/prod.sls. Copy salt/pillar/prod.sls.example and fill it out"
+      when: st2.stat.exists != True
+
+    - name: Running alembic database migrations
+      command: /opt/venvs/tildes/bin/alembic upgrade head
+      become: yes
+      become_user: tildes
+      args:
+        chdir: /opt/tildes/
+      register: alembic_output
+
+    - name: Updating salt states
+      command: salt-call --local state.apply -l info
+      register: salt_output
+
+    - name: Putting the site back up
+      systemd:
+        name: gunicorn
+        enabled: yes
+        state: reloaded
