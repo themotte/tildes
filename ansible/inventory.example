@@ -1,8 +1,2 @@
-[servers]
-tildes_server ansible_host=HOSTNAME
-
-[www]
-tildes_server
-
-[all:vars]
-ansible_python_interpreter=/usr/bin/python3
+[tildes_server]
+YOUR_SERVER_HERE certbot_domains="-d YOUR_DOMAIN_HERE"

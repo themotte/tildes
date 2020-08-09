@@ -25,3 +25,6 @@ tildes/static/images/site-icons/*.png
 
 # NodeJS dependencies
 tildes/node_modules/
+
+# Avoid production configs from being tracked
+tildes/production.ini

@@ -1,0 +1,161 @@
+---
+- hosts: tildes_server
+  become: yes
+  
+  tasks:
+    - name: Allow SSH through the firewall
+      ufw:
+        rule: allow
+        port: ssh
+        proto: tcp
+
+    - name: Allow HTTP through the firewall
+      ufw:
+        rule: allow
+        port: http
+        proto: tcp
+
+    - name: Allow HTTPS through the firewall
+      ufw:
+        rule: allow
+        port: https
+        proto: tcp
+
+    - name: Turn on the firewall
+      ufw:
+        state: enabled
+        policy: deny
+
+    - name: Add tildes user
+      user:
+        name: tildes
+
+    - name: Add nginx user
+      user:
+        name: nginx
+        create_home: no
+        system: yes
+
+    - name: Copy the tildes source to the remote server
+      synchronize:
+        src: ../..
+        dest: /home/tildes
+        recursive: yes
+        delete: yes
+        rsync_opts:
+          - "--exclude=.vagrant"
+          - "--exclude=Customfile"
+          - "--exclude=__pycache__"
+          - "--exclude=*.py[co]"
+          - "--exclude=pip-wheel-metadata/"
+          - "--exclude=*.egg-info/"
+          - "--exclude=.cache/"
+          - "--exclude=.mypy_cache/"
+          - "--exclude=.webassets-cache/"
+          - "--exclude=.webassets-manifest"
+          - "--exclude=*.gz"
+          - "--exclude=*.log"
+          - "--exclude=tildes/static/css/*"
+          - "--exclude=tildes/static/js/third_party.js"
+          - "--exclude=tildes/static/js/tildes.js"
+          - "--exclude=tildes/node_modules/"
+
+    - name: Create a symbolic link at /opt/tildes
+      file:
+        src: /home/tildes/tildes/tildes
+        dest: /opt/tildes
+        state: link
+
+    - name: Create a symbolic link at /srv/salt
+      file:
+        src: /home/tildes/tildes/salt/salt
+        dest: /srv/salt
+        state: link
+
+    - name: Create a symbolic link at /srv/pillar
+      file:
+        src: /home/tildes/tildes/salt/pillar
+        dest: /srv/pillar
+        state: link
+
+    - name: "Checking for /opt/tildes/production.ini"
+      stat:
+        path: /opt/tildes/production.ini
+      register: st1
+    - fail:
+        msg: "Missing tildes/production.ini. Copy tildes/production.ini.example and fill it out"
+      when: st1.stat.exists != True
+
+    - name: "Checking for /srv/pillar/prod.sls"
+      stat:
+        path: /srv/pillar/prod.sls
+      register: st2
+    - fail:
+        msg: "Missing salt/pillar/prod.sls. Copy salt/pillar/prod.sls.example and fill it out"
+      when: st2.stat.exists != True
+
+    - name: Create the /etc/salt directory
+      file:
+        path: /etc/salt
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Copy the minion file to /etc/salt
+      copy:
+        src: /home/tildes/tildes/salt/minion
+        dest: /etc/salt/minion
+        remote_src: yes
+
+    - name: Set prod environment in the minion
+      lineinfile:
+        path: /etc/salt/minion
+        regexp: '^id: '
+        line: "id: prod"
+
+    - name: Add saltstack signing key
+      apt_key:
+        id: 754A1A7AE731F165D5E6D4BD0E08A149DE57BFBE
+        url: https://repo.saltstack.com/py3/{{ ansible_distribution|lower }}/{{ ansible_distribution_version }}/amd64/latest/SALTSTACK-GPG-KEY.pub
+        state: present
+
+    - name: Add saltstack repository
+      apt_repository:
+        repo: "deb http://repo.saltstack.com/py3/{{ ansible_distribution|lower }}/{{ ansible_distribution_version }}/amd64/latest {{ ansible_distribution_release }} main"
+        filename: 'saltstack'
+        state: present
+
+    - name: Install salt minion
+      apt:
+        name: salt-minion
+        state: present
+        update_cache: true
+
+    - name: Disable the minon service
+      systemd:
+        name: salt-minion
+        enabled: no
+        state: stopped
+
+    - name: Add certbot PPA
+      apt_repository:
+        repo: ppa:certbot/certbot
+        state: present
+
+    - name: Install certbot
+      apt:
+        name: python-certbot-nginx
+        state: present
+        update_cache: true
+
+    # This feels a little dirty. Can anyone think of any issues this might cause?
+    # It looks like the PPA version of certbot will in fact set up auto-renewal
+    - name: Getting cert from Let's Encrypt
+      command:
+        cmd: certbot certonly --nginx -n {{ certbot_domains }} --preferred-challenges http-01 --register-unsafely-without-email --agree-tos
+        creates: /etc/letsencrypt/live/*/privkey.pem
+
+    - name: Pass the baton over to salt (this step may take several minutes)
+      command: salt-call --local state.highstate
+      register: salt_output
