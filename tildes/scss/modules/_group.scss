@@ -28,6 +28,16 @@
   line-height: 0.8rem;
 }
 
+.group-list-item-not-subscribed {
+  a.link-group {
+    color: var(--warning-color);
+  }
+}
+
+.group-sidebar-text {
+  margin-top: 1rem;
+}
+
 .group-subscription {
   display: flex;
   align-items: center;

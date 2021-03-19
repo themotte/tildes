@@ -32,6 +32,10 @@
   <meta name="theme-color" content="#3f3f3f">
   {% elif request.current_theme == "gruvbox-dark" %}
   <meta name="theme-color" content="#282828">
+  {% elif request.current_theme == "love-dark" %}
+  <meta name="theme-color" content="#1f1731">
+  {% elif request.current_theme == "love-light" %}
+  <meta name="theme-color" content="#f2efff">
   {% endif %}
 
   {% assets "css" %}
@@ -50,6 +54,9 @@
   <meta name="apple-mobile-web-app-title" content="Tildes">
   <meta name="application-name" content="Tildes">
   <meta name="msapplication-TileColor" content="#002b36">
+
+  {# RSS/Atom feeds #}
+  {% block link_alternate_feeds %}{% endblock %}
 
   <title>{% block title_full %}{% block title %}{% endblock %} - Tildes{% endblock %}</title>
 
@@ -116,6 +123,8 @@
           ("zenburn", "Zenburn"),
           ("gruvbox-light", "Gruvbox Light"),
           ("gruvbox-dark", "Gruvbox Dark"),
+          ("love-dark", "Love Dark"),
+          ("love-light", "Love Light"),
           ("motte", "The Motte")) %}
       <option value="{{ theme }}"
         {{ 'selected' if theme == request.current_theme else '' }}
@@ -131,7 +140,7 @@
     <li class="site-footer-link"><a href="https://blog.tildes.net">Blog</a></li>
     <li class="site-footer-link"><a href="https://docs.tildes.net/contact">Contact</a></li>
     <li class="site-footer-link"><a href="https://gitlab.com/tildes/tildes">Source code</a></li>
-    <li class="site-footer-link"><a href="https://gitlab.com/tildes/tildes/issues?label_name[]=Feature+Request&label_name[]=Stage%3A%3AAccepted&scope=all&sort=priority&state=opened">Planned features</a> / <a href="https://gitlab.com/tildes/tildes/issues">All issues</a></li>
+    <li class="site-footer-link"><a href="https://gitlab.com/tildes/tildes/issues?label_name%5B%5D=Feature+Request&amp;label_name%5B%5D=Stage%3A%3AAccepted&amp;scope=all&amp;sort=priority&amp;state=opened">Planned features</a> / <a href="https://gitlab.com/tildes/tildes/issues">All issues</a></li>
     <li class="site-footer-link"><a href="https://docs.tildes.net/policies/privacy-policy">Privacy policy</a></li>
     <li class="site-footer-link"><a href="https://docs.tildes.net/policies/terms-of-use">Terms of use</a></li>
   </ul>

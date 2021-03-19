@@ -30,7 +30,7 @@
 {% endblock %}
 
 {% block content %}
-<article class="topic-full">
+<article id="topic-{{ topic.topic_id36 }}" class="topic-full">
 <header>
   {{ topic_voting(topic) }}
   <h1>{{ topic.title }}</h1>
@@ -117,7 +117,7 @@
           topic_id36=topic.topic_id36,
         ) }}"
         data-ic-swap-style="replace"
-        data-ic-target=".topic-full .btn-post:first + .btn-post-settings"
+        data-ic-target=".topic-full .btn-post:first + .post-action-settings"
       >Tag</button></li>
     {% endif %}
 
@@ -138,7 +138,7 @@
           topic_id36=topic.topic_id36,
         ) }}"
         data-ic-swap-style="replace"
-        data-ic-target=".topic-full .btn-post:first + .btn-post-settings"
+        data-ic-target=".topic-full .btn-post:first + .post-action-settings"
       >Move</button>
     {% endif %}
 
@@ -149,7 +149,7 @@
           topic_id36=topic.topic_id36,
         ) }}"
         data-ic-swap-style="replace"
-        data-ic-target=".topic-full .btn-post:first + .btn-post-settings"
+        data-ic-target=".topic-full .btn-post:first + .post-action-settings"
       >Edit title</button>
     {% endif %}
 
@@ -160,7 +160,7 @@
           topic_id36=topic.topic_id36,
         ) }}"
         data-ic-swap-style="replace"
-        data-ic-target=".topic-full .btn-post:first + .btn-post-settings"
+        data-ic-target=".topic-full .btn-post:first + .post-action-settings"
       >Edit link</button>
     {% endif %}
 
@@ -204,7 +204,7 @@
                   topic_id36=topic.topic_id36,
                 ) }}"
                 data-ic-swap-style="replace"
-                data-ic-target=".topic-full .btn-post:first + .btn-post-settings"
+                data-ic-target=".topic-full .btn-post:first + .post-action-settings"
               >View Markdown</button>
             </li>
           </menu>
@@ -213,7 +213,7 @@
     {% endif %}
 
   </menu>
-  <div class="btn-post-settings"></div>
+  <div class="post-action-settings"></div>
 
 {% if topic.is_locked %}
   <div class="toast toast-warning">This topic is locked. New comments can not be posted.</div>
@@ -274,6 +274,14 @@
       </div>
     </form>
   </section>
+{% elif request.user
+    and topic.was_posted_by_scheduler
+    and topic.schedule.only_new_top_level_comments_in_latest
+    and topic != topic.schedule.latest_topic %}
+  <div class="divider"></div>
+  <p class="text-small">This is an older topic in a scheduled series, and is closed to new top-level comments.</p>
+
+  <p class="text-small">To respond, <a href="{{ topic.schedule.latest_topic.permalink }}">go to the most recent topic in the series</a> instead.</p>
 {% endif %}
 
 </article>
@@ -301,12 +309,14 @@
       ({{ pluralize(comments.num_top_level, "thread") }})
     </dd>
 
-    <dt>Last comment posted</dt>
-    <dd>
-      <a href="{{ comments.most_recent_comment.permalink }}" data-js-hide-sidebar-no-preventdefault>
-        {{ adaptive_date_responsive(topic.last_activity_time) }}
-      </a>
-    </dd>
+    {% if comments.most_recent_comment %}
+      <dt>Last comment posted</dt>
+      <dd>
+        <a href="{{ comments.most_recent_comment.permalink }}" data-js-hide-sidebar-no-preventdefault>
+          {{ adaptive_date_responsive(comments.most_recent_comment.created_time) }}
+        </a>
+      </dd>
+    {% endif %}
   {% else %}
     <dd>No comments yet</dd>
   {% endif %}
@@ -322,6 +332,12 @@
               Unknown user
             {% else %}
               {{ link_to_user(entry.user) }}
+
+              {% if entry.user == topic.user %}
+                <span class="topic-user-info">
+                  (<abbr title="Original Poster (of the topic)">OP</abbr>)
+                </span>
+              {% endif %}
             {% endif %}
             {{ entry }}
             <span class="topic-log-entry-time">({{ time_ago(entry.event_time, abbreviate=True) }})</span>

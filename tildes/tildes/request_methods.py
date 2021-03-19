@@ -27,6 +27,7 @@ def get_redis_connection(request: Request) -> Redis:
 def is_bot(request: Request) -> bool:
     """Return whether the request is by a known bot (e.g. search engine crawlers)."""
     bot_user_agent_substrings = (
+        "Amazonbot",
         "bingbot",
         "Googlebot",
         "heritrix",
@@ -36,7 +37,9 @@ def is_bot(request: Request) -> bool:
         "Python-urllib",
         "Qwantify",
         "SeznamBot",
+        "tildee.py",
         "Tildes Scraper",
+        "yacybot",
         "YandexBot",
     )
 
@@ -86,6 +89,9 @@ def check_rate_limit(request: Request, action_name: str) -> RateLimitResult:
     action.redis = request.redis
 
     results = []
+
+    if action.is_global:
+        results.append(action.check_global())
 
     if action.by_user and request.user:
         results.append(action.check_for_user_id(request.user.user_id))

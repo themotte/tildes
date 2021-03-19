@@ -46,10 +46,17 @@ def test_whitespace_trimmed(title_schema):
 
 
 def test_trailing_periods_trimmed(title_schema):
-    """Ensure trailing periods on a title are removed."""
+    """Ensure trailing periods on a single-sentence title are removed."""
     title = "This is an interesting story."
     result = title_schema.load({"title": title})
     assert not result["title"].endswith(".")
+
+
+def test_multisentence_trailing_period_kept(title_schema):
+    """Ensure a trailing period is kept if the title has multiple sentences."""
+    title = "I came. I saw. I conquered."
+    result = title_schema.load({"title": title})
+    assert result["title"].endswith(".")
 
 
 def test_consecutive_whitespace_removed(title_schema):
@@ -71,3 +78,13 @@ def test_unicode_control_chars_removed(title_schema):
     title = "nothing\u0000strange\u0085going\u009con\u007fhere"
     result = title_schema.load({"title": title})
     assert result["title"] == "nothingstrangegoingonhere"
+
+
+def test_zero_width_joiner_emojis_kept(title_schema):
+    """Test that emojis are parsed correctly"""
+    title = "🤷🤷‍♂️🤷‍♀️🤷🏻🤷🏻‍♀️🤷🏻‍♂️🤷🏼🤷🏼‍♀️🤷🏼‍♂️🤷🏽🤷🏽‍♀️🤷🏽‍♂️🤷🏾🤷🏾‍♀️🤷🏾‍♂️🤷🏿🤷🏿‍♀️🤷🏿‍♂️"
+    result = title_schema.load({"title": title})
+    assert (
+        result["title"]
+        == "🤷🤷‍♂️🤷‍♀️🤷🏻🤷🏻‍♀️🤷🏻‍♂️🤷🏼🤷🏼‍♀️🤷🏼‍♂️🤷🏽🤷🏽‍♀️🤷🏽‍♂️🤷🏾🤷🏾‍♀️🤷🏾‍♂️🤷🏿🤷🏿‍♀️🤷🏿‍♂️"
+    )
