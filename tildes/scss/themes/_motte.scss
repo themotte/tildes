@@ -31,4 +31,8 @@ body.theme-motte {
   @include use-theme($motte-theme);
 }
 
-@include theme-preview-block($motte-theme, "motte");
+@include theme-preview-block(
+  "motte",
+  map-get($motte-theme, "foreground-primary"),
+  map-get($motte-theme, "background-primary")
+);
