@@ -9,8 +9,6 @@ base:
     - postgresql.pgbouncer
     - python
     - redis
-    - redis.breached-passwords
-    - redis.modules.rebloom
     - redis.modules.redis-cell
     - postgresql-redis-bridge
     - scripts
@@ -22,6 +20,7 @@ base:
     - tildes-wiki
     - boussole
     - webassets
+    - pts-lbsearch
     - cronjobs
     - final-setup  # keep this state file last
   'dev':
@@ -30,6 +29,7 @@ base:
     - development
     - prometheus
     - nodejs
+    - java
   'prod':
     - nginx.shortener-config
     - nginx.static-sites-config

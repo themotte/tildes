@@ -107,7 +107,8 @@ class ContentMetadataFields(enum.Enum):
 
     @classmethod
     def detail_fields_for_content_type(
-        cls, content_type: "TopicContentType",
+        cls,
+        content_type: "TopicContentType",
     ) -> List["ContentMetadataFields"]:
         """Return a list of fields to display for detail about a particular type."""
         if content_type is TopicContentType.ARTICLE:
@@ -290,6 +291,28 @@ class HTMLSanitizationContext(enum.Enum):
     """Enum for the possible contexts for HTML sanitization."""
 
     USER_BIO = enum.auto()
+
+
+# Enum for the possible user permissions
+# (Using functional API for this one because the values aren't valid Python names)
+UserPermission = enum.Enum(
+    "UserPermission",
+    [
+        "comment.remove",
+        "comment.view_labels",
+        "topic.edit_by_generic_user",
+        "topic.edit_link",
+        "topic.edit_title",
+        "topic.lock",
+        "topic.move",
+        "topic.post",
+        "topic.remove",
+        "topic.tag",
+        "user.ban",
+        "user.view_removed_posts",
+        "wiki.edit",
+    ],
+)
 
 
 class UserPermissionType(enum.Enum):

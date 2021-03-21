@@ -3,6 +3,7 @@
 
 """Contains the Topic class."""
 
+from __future__ import annotations
 from datetime import datetime, timedelta
 from itertools import chain
 from pathlib import PurePosixPath
@@ -65,6 +66,9 @@ class Topic(DatabaseModel):
           updates to is_deleted in comments.
         - last_activity_time will be updated by insertions, deletions, and updates to
           is_deleted in comments.
+      Outgoing:
+        - Inserting rows or updating is_deleted/is_removed to change visibility will
+          update topic_schedule.latest_topic_id if the topic has a schedule_id.
       Internal:
         - deleted_time will be set when is_deleted is set to true
     """
@@ -84,14 +88,20 @@ class Topic(DatabaseModel):
         Integer, ForeignKey("topic_schedule.schedule_id"), index=True
     )
     created_time: datetime = Column(
-        TIMESTAMP(timezone=True), nullable=False, server_default=text("NOW()"),
+        TIMESTAMP(timezone=True),
+        nullable=False,
+        server_default=text("NOW()"),
     )
     last_edited_time: Optional[datetime] = Column(TIMESTAMP(timezone=True))
     last_activity_time: datetime = Column(
-        TIMESTAMP(timezone=True), nullable=False, server_default=text("NOW()"),
+        TIMESTAMP(timezone=True),
+        nullable=False,
+        server_default=text("NOW()"),
     )
     last_interesting_activity_time: datetime = Column(
-        TIMESTAMP(timezone=True), nullable=False, server_default=text("NOW()"),
+        TIMESTAMP(timezone=True),
+        nullable=False,
+        server_default=text("NOW()"),
     )
     is_deleted: bool = Column(
         Boolean, nullable=False, server_default="false", index=True
@@ -127,6 +137,8 @@ class Topic(DatabaseModel):
 
     user: User = relationship("User", lazy=False, innerjoin=True)
     group: Group = relationship("Group", innerjoin=True)
+
+    schedule = relationship("TopicSchedule", foreign_keys=[schedule_id])
 
     # Create specialized indexes
     __table_args__ = (
@@ -207,7 +219,7 @@ class Topic(DatabaseModel):
         return f'<Topic "{self.title}" ({self.topic_id})>'
 
     @classmethod
-    def _create_base_topic(cls, group: Group, author: User, title: str) -> "Topic":
+    def _create_base_topic(cls, group: Group, author: User, title: str) -> Topic:
         """Create the "base" for a new topic."""
         new_topic = cls()
         new_topic.group = group
@@ -224,7 +236,7 @@ class Topic(DatabaseModel):
     @classmethod
     def create_text_topic(
         cls, group: Group, author: User, title: str, markdown: str = ""
-    ) -> "Topic":
+    ) -> Topic:
         """Create a new text topic."""
         new_topic = cls._create_base_topic(group, author, title)
         new_topic.topic_type = TopicType.TEXT
@@ -235,7 +247,7 @@ class Topic(DatabaseModel):
     @classmethod
     def create_link_topic(
         cls, group: Group, author: User, title: str, link: str
-    ) -> "Topic":
+    ) -> Topic:
         """Create a new link topic."""
         new_topic = cls._create_base_topic(group, author, title)
         new_topic.topic_type = TopicType.LINK
@@ -312,6 +324,9 @@ class Topic(DatabaseModel):
         # comment:
         #  - removed topics can only be commented on by users who can remove
         #  - locked topics can only be commented on by users who can lock
+        #  - topics posted by the scheduler can only be commented in if they're the
+        #    latest topic from that schedule, or only_new_top_level_comments_in_latest
+        #    is False
         #  - otherwise, logged-in users can comment
         if self.is_removed:
             acl.extend(
@@ -331,6 +346,13 @@ class Topic(DatabaseModel):
                     group_id=self.group_id,
                 )
             )
+            acl.append((Deny, Everyone, "comment"))
+
+        if (
+            self.was_posted_by_scheduler
+            and self.schedule.only_new_top_level_comments_in_latest
+            and self.topic_id != self.schedule.latest_topic_id
+        ):
             acl.append((Deny, Everyone, "comment"))
 
         acl.append((Allow, Authenticated, "comment"))
@@ -398,6 +420,11 @@ class Topic(DatabaseModel):
     def permalink(self) -> str:
         """Return the permalink for this topic."""
         return f"/~{self.group.path}/{self.topic_id36}/{self.url_slug}"
+
+    @property
+    def permalink_absolute(self) -> str:
+        """Return the absolute permalink for this topic (domain included)."""
+        return f"https://tildes.net{self.permalink}"
 
     @property
     def is_text_type(self) -> bool:

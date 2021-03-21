@@ -4,6 +4,7 @@
 """Views related to posting/viewing topics and comments on them."""
 
 from collections import namedtuple
+from datetime import timedelta
 from difflib import SequenceMatcher
 from typing import Any, Optional, Union
 
@@ -15,9 +16,9 @@ from pyramid.request import Request
 from pyramid.response import Response
 from pyramid.view import view_config
 from sqlalchemy import cast
-from sqlalchemy.sql.expression import any_, desc, text
+from sqlalchemy.orm import joinedload
+from sqlalchemy.sql.expression import any_, desc
 from sqlalchemy_utils import Ltree
-from webargs.pyramidparser import use_kwargs
 
 from tildes.enums import (
     CommentLabelOption,
@@ -37,18 +38,18 @@ from tildes.schemas.comment import CommentSchema
 from tildes.schemas.fields import ShortTimePeriod
 from tildes.schemas.listing import TopicListingSchema
 from tildes.schemas.topic import TopicSchema
-from tildes.views.decorators import rate_limit_view
+from tildes.views.decorators import rate_limit_view, use_kwargs
 from tildes.views.financials import get_financial_data
 
 
 DefaultSettings = namedtuple("DefaultSettings", ["order", "period"])
 
 
-@view_config(route_name="group_topics", request_method="POST", permission="post_topic")
-@use_kwargs(TopicSchema(only=("title", "markdown", "link")))
+@view_config(route_name="group_topics", request_method="POST", permission="topic.post")
+@use_kwargs(TopicSchema(only=("title", "markdown", "link")), location="form")
 @use_kwargs(
     {"tags": String(missing=""), "confirm_repost": Boolean(missing=False)},
-    locations=("form",),  # will crash due to trying to find JSON data without this
+    location="form",
 )
 def post_group_topics(
     request: Request,
@@ -62,10 +63,13 @@ def post_group_topics(
     group = request.context
 
     if link:
-        # check to see if this link has been posted before
+        # check to see if this link has already been posted in the last 6 months
         previous_topics = (
             request.query(Topic)
-            .filter(Topic.link == link)
+            .filter(
+                Topic.link == link,
+                Topic.created_time >= utc_now() - timedelta(days=180),
+            )
             .order_by(desc(Topic.created_time))
             .limit(5)
             .all()
@@ -145,7 +149,11 @@ def redirect_to_group(request: Request) -> HTTPFound:  # noqa
 
 
 # @view_config(route_name="home", renderer="home.jinja2")
+@view_config(route_name="home_atom", renderer="home.atom.jinja2")
+@view_config(route_name="home_rss", renderer="home.rss.jinja2")
 @view_config(route_name="group", renderer="topic_listing.jinja2")
+@view_config(route_name="group_topics_atom", renderer="topic_listing.atom.jinja2")
+@view_config(route_name="group_topics_rss", renderer="topic_listing.rss.jinja2")
 @use_kwargs(TopicListingSchema())
 def get_group_topics(  # noqa
     request: Request,
@@ -162,7 +170,9 @@ def get_group_topics(  # noqa
     # period needs special treatment so we can distinguish between missing and None
     period = kwargs.get("period", missing)
 
-    is_home_page = request.matched_route.name == "home"
+    is_home_page = request.matched_route.name in ["home", "home_atom", "home_rss"]
+    is_atom = request.matched_route.name in ["home_atom", "group_topics_atom"]
+    is_rss = request.matched_route.name in ["home_rss", "group_topics_rss"]
 
     if is_home_page:
         # on the home page, include topics from the user's subscribed groups
@@ -195,6 +205,11 @@ def get_group_topics(  # noqa
     if period is missing:
         period = default_settings.period
 
+    # force Newest sort order, and All Time period, for RSS feeds
+    if is_atom or is_rss:
+        order = TopicSortOption.NEW
+        period = None
+
     # set up the basic query for topics
     query = (
         request.query(Topic)
@@ -219,11 +234,22 @@ def get_group_topics(  # noqa
     if after:
         query = query.after_id36(after)
 
-    # apply topic tag filters unless they're disabled or viewing a single tag
-    if request.user and request.user.filtered_topic_tags and not (tag or unfiltered):
+    # apply topic tag filters unless they're disabled
+    if request.user and request.user.filtered_topic_tags and not unfiltered:
+        filtered_topic_tags = request.user.filtered_topic_tags
+
+        # if viewing single tag, don't filter that tag and its ancestors
+        # for example, if viewing "ask.survey", don't filter "ask.survey" or "ask"
+        if tag:
+            filtered_topic_tags = [
+                ft
+                for ft in filtered_topic_tags
+                if not tag.descendant_of(ft.replace(" ", "_"))
+            ]
+
         query = query.filter(
             ~Topic.tags.descendant_of(  # type: ignore
-                any_(cast(request.user.filtered_topic_tags, TagList))
+                any_(cast(filtered_topic_tags, TagList))
             )
         )
 
@@ -271,30 +297,31 @@ def get_group_topics(  # noqa
 
     if isinstance(request.context, Group):
         # Get the most recent topic from each scheduled topic in this group
-        # I'm not even going to attempt to write this query in pure SQLAlchemy
-        topic_id_subquery = """
-            SELECT topic_id FROM (SELECT topic_id, schedule_id, row_number() OVER
-            (PARTITION BY schedule_id ORDER BY created_time DESC) AS rownum FROM topics)
-            AS t WHERE schedule_id IS NOT NULL AND rownum = 1
-        """
-        most_recent_scheduled_topics = (
-            request.query(Topic)
-            .join(TopicSchedule)
+        group_schedules = (
+            request.query(TopicSchedule)
+            .options(joinedload(TopicSchedule.latest_topic))
             .filter(
-                Topic.topic_id.in_(text(topic_id_subquery)),  # type: ignore
                 TopicSchedule.group == request.context,
                 TopicSchedule.next_post_time != None,  # noqa
             )
             .order_by(TopicSchedule.next_post_time)
             .all()
         )
+        most_recent_scheduled_topics = [
+            schedule.latest_topic for schedule in group_schedules
+        ]
     else:
-        most_recent_scheduled_topics = None
+        most_recent_scheduled_topics = []
 
     if is_home_page:
         financial_data = get_financial_data(request.db_session)
     else:
         financial_data = None
+
+    if is_atom:
+        request.response.content_type = "application/atom+xml"
+    if is_rss:
+        request.response.content_type = "application/rss+xml"
 
     return {
         "group": request.context,
@@ -398,7 +425,7 @@ def get_search(
 
 
 @view_config(
-    route_name="new_topic", renderer="new_topic.jinja2", permission="post_topic"
+    route_name="new_topic", renderer="new_topic.jinja2", permission="topic.post"
 )
 def get_new_topic_form(request: Request) -> dict:
     """Form for entering a new topic to post."""
@@ -482,7 +509,7 @@ def get_topic(request: Request) -> dict:
 
 
 @view_config(route_name="topic", request_method="POST", permission="comment")
-@use_kwargs(CommentSchema(only=("markdown",)))
+@use_kwargs(CommentSchema(only=("markdown",)), location="form")
 @rate_limit_view("comment_post")
 def post_comment_on_topic(request: Request, markdown: str) -> HTTPFound:
     """Post a new top-level comment on a topic."""

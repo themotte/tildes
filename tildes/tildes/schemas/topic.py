@@ -43,10 +43,18 @@ class TopicSchema(Schema):
         if "title" not in data:
             return data
 
-        # strip any trailing periods
-        data["title"] = data["title"].rstrip(".")
+        new_data = data.copy()
 
-        return data
+        split_title = re.split("[.?!]+", new_data["title"])
+
+        # the last string in the list will be empty if it ended with punctuation
+        num_sentences = len([piece for piece in split_title if piece])
+
+        # strip trailing periods off single-sentence titles
+        if num_sentences == 1:
+            new_data["title"] = new_data["title"].rstrip(".")
+
+        return new_data
 
     @pre_load
     def prepare_tags(self, data: dict, many: bool, partial: Any) -> dict:
@@ -55,9 +63,11 @@ class TopicSchema(Schema):
         if "tags" not in data:
             return data
 
+        new_data = data.copy()
+
         tags: typing.List[str] = []
 
-        for tag in data["tags"]:
+        for tag in new_data["tags"]:
             tag = tag.lower()
 
             # replace underscores with spaces
@@ -84,9 +94,9 @@ class TopicSchema(Schema):
 
             tags.append(tag)
 
-        data["tags"] = tags
+        new_data["tags"] = tags
 
-        return data
+        return new_data
 
     @validates("tags")
     def validate_tags(self, value: typing.List[str]) -> None:
@@ -112,11 +122,13 @@ class TopicSchema(Schema):
         if "markdown" not in data:
             return data
 
-        # if the value is empty, convert it to None
-        if not data["markdown"] or data["markdown"].isspace():
-            data["markdown"] = None
+        new_data = data.copy()
 
-        return data
+        # if the value is empty, convert it to None
+        if not new_data["markdown"] or new_data["markdown"].isspace():
+            new_data["markdown"] = None
+
+        return new_data
 
     @pre_load
     def prepare_link(self, data: dict, many: bool, partial: Any) -> dict:
@@ -125,23 +137,25 @@ class TopicSchema(Schema):
         if "link" not in data:
             return data
 
+        new_data = data.copy()
+
         # remove leading/trailing whitespace
-        data["link"] = data["link"].strip()
+        new_data["link"] = new_data["link"].strip()
 
         # if the value is empty, convert it to None
-        if not data["link"]:
-            data["link"] = None
-            return data
+        if not new_data["link"]:
+            new_data["link"] = None
+            return new_data
 
         # prepend http:// to the link if it doesn't have a scheme
-        parsed = urlparse(data["link"])
+        parsed = urlparse(new_data["link"])
         if not parsed.scheme:
-            data["link"] = "http://" + data["link"]
+            new_data["link"] = "http://" + new_data["link"]
 
         # run the link through the url-transformation process
-        data["link"] = apply_url_transformations(data["link"])
+        new_data["link"] = apply_url_transformations(new_data["link"])
 
-        return data
+        return new_data
 
     @validates_schema
     def link_or_markdown(self, data: dict, many: bool, partial: Any) -> None:

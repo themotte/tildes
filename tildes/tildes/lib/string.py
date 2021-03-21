@@ -178,7 +178,7 @@ def _sanitize_characters(original: str) -> str:
     """Process a string and filter/replace problematic unicode."""
     final_characters = []
 
-    for char in original:
+    for index, char in enumerate(original):
         category = unicodedata.category(char)
 
         if category.startswith("Z"):
@@ -189,6 +189,18 @@ def _sanitize_characters(original: str) -> str:
             # newlines, which are replaced with normal spaces
             if char == "\n":
                 final_characters.append(" ")
+
+            # Keep zero-width joiner only if it's between two symbol characters, so we
+            # don't break certain emoji variants
+            if char == "\u200D":
+                try:
+                    before_category = unicodedata.category(final_characters[-1])
+                    after_category = unicodedata.category(original[index + 1])
+                except IndexError:
+                    continue
+
+                if before_category.startswith("S") and after_category.startswith("S"):
+                    final_characters.append(char)
         else:
             # any other type of character, just keep it
             final_characters.append(char)

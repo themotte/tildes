@@ -2,11 +2,10 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 import os
-from http.cookiejar import CookieJar
 
 from pyramid import testing
 from pyramid.paster import get_app, get_appsettings
-from pytest import fixture
+from pytest import fixture, mark
 from redis import Redis
 from sqlalchemy import create_engine
 from sqlalchemy.engine.url import make_url
@@ -210,7 +209,7 @@ def base_app(overall_redis_session, sdb):
 @fixture(scope="session")
 def webtest(base_app):
     """Create a webtest TestApp and log in as the SessionUser account in it."""
-    app = TestApp(base_app, extra_environ=WEBTEST_EXTRA_ENVIRON, cookiejar=CookieJar())
+    app = TestApp(base_app, extra_environ=WEBTEST_EXTRA_ENVIRON)
 
     # fetch the login page, fill in the form, and submit it (sets the cookie)
     login_page = app.get("/login")
@@ -221,7 +220,16 @@ def webtest(base_app):
     yield app
 
 
-@fixture(scope="session")
+@fixture(scope="function")
 def webtest_loggedout(base_app):
-    """Create a logged-out webtest TestApp (no cookies retained)."""
+    """Create a logged-out webtest TestApp (function scope, so no state is retained)."""
     yield TestApp(base_app, extra_environ=WEBTEST_EXTRA_ENVIRON)
+
+
+def pytest_collection_modifyitems(items):
+    """Add "webtest" marker to any tests that use either of the WebTest fixtures."""
+    webtest_fixture_names = ("webtest", "webtest_loggedout")
+
+    for item in items:
+        if any([fixture in item.fixturenames for fixture in webtest_fixture_names]):
+            item.add_marker(mark.webtest)

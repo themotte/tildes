@@ -8,6 +8,17 @@
     .btn-post-action {
       justify-content: left;
       width: 100%;
+
+      &:hover {
+        background-color: var(--background-secondary-color);
+      }
+    }
+  }
+
+  &.dropdown-bottom {
+    .menu {
+      top: auto;
+      bottom: 100%;
     }
   }
 

@@ -1,0 +1,305 @@
+// Copyright (c) 2020 Tildes contributors <code@tildes.net>
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+@mixin theme-preview-block($name, $foreground, $background) {
+  .theme-preview-block-#{$name} {
+    background-color: $background;
+    color: $foreground;
+    border: 1px solid;
+  }
+}
+
+@function map-get-fallback($map, $preferred-key, $fallback-key) {
+  // map-get that will fall back to a second key if the first isn't set
+  @if (map-has-key($map, $preferred-key)) {
+    @return map-get($map, $preferred-key);
+  }
+
+  @return map-get($map, $fallback-key);
+}
+
+@function init-theme($theme) {
+  // check to make sure the theme has all of the essential colors set
+  $essential-keys:
+    "alert"
+    "background-primary"
+    "background-secondary"
+    "comment-label-exemplary"
+    "comment-label-joke"
+    "comment-label-noise"
+    "comment-label-offtopic"
+    "comment-label-malice"
+    "error"
+    "foreground-primary"
+    "foreground-secondary"
+    "link"
+    "link-visited"
+    "success"
+    "warning";
+
+  @each $key in $essential-keys {
+    @if (not map-has-key($theme, $key)) {
+      @error "Missing essential key in theme: #{$key}";
+    }
+  }
+
+  // colors that simply fall back to another if not defined
+  $background-input: map-get-fallback($theme, "background-input", "background-primary");
+  $border: map-get-fallback($theme, "border", "foreground-secondary");
+  $button: map-get-fallback($theme, "button", "link");
+  $button-used: map-get-fallback($theme, "button-used", "link-visited");
+  // stylelint-disable-next-line
+  $foreground-highlight: map-get-fallback($theme, "foreground-highlight", "foreground-primary");
+  $stripe-mine: map-get-fallback($theme, "stripe-mine", "link-visited");
+  $stripe-target: map-get-fallback($theme, "stripe-target", "warning");
+  $syntax-builtin: map-get-fallback($theme, "syntax-builtin", "foreground-primary");
+  $syntax-comment: map-get-fallback($theme, "syntax-comment", "foreground-primary");
+  $syntax-constant: map-get-fallback($theme, "syntax-constant", "foreground-primary");
+  $syntax-keyword: map-get-fallback($theme, "syntax-keyword", "foreground-primary");
+  $syntax-literal: map-get-fallback($theme, "syntax-literal", "foreground-primary");
+  $syntax-string: map-get-fallback($theme, "syntax-string", "foreground-primary");
+  $topic-tag-nsfw: map-get-fallback($theme, "topic-tag-nsfw", "error");
+  $topic-tag-spoiler: map-get-fallback($theme, "topic-tag-spoiler", "warning");
+
+  // foreground-extreme: if not defined, use white on a dark bg and black on a light one
+  $foreground-extreme: map-get($theme, "foreground-extreme");
+  $foreground-extreme:
+    choose-by-brightness(
+      map-get($theme, "background-primary"),
+      #000,
+      #fff,
+    ) !default;
+
+  // foreground-middle: if not defined, mix foreground-primary and foreground-secondary
+  $foreground-middle: map-get($theme, "foreground-middle");
+  $foreground-middle:
+    mix(
+      map-get($theme, "foreground-primary"),
+      map-get($theme, "foreground-secondary")
+    ) !default;
+
+  // link-hover: if not defined, darken the link color slightly
+  $link-hover: map-get($theme, "link-hover");
+  $link-hover: darken(map-get($theme, "link"), 5%) !default;
+  $new-theme:
+    map-merge(
+      $theme,
+      (
+        "background-input": $background-input,
+        "border": $border,
+        "button": $button,
+        "button-used": $button-used,
+        "foreground-extreme": $foreground-extreme,
+        "foreground-highlight": $foreground-highlight,
+        "foreground-middle": $foreground-middle,
+        "link-hover": $link-hover,
+        "stripe-mine": $stripe-mine,
+        "stripe-target": $stripe-target,
+        "syntax-builtin": $syntax-builtin,
+        "syntax-comment": $syntax-comment,
+        "syntax-constant": $syntax-constant,
+        "syntax-keyword": $syntax-keyword,
+        "syntax-literal": $syntax-literal,
+        "syntax-string": $syntax-string,
+        "topic-tag-nsfw": $topic-tag-nsfw,
+        "topic-tag-spoiler": $topic-tag-spoiler,
+      )
+    );
+
+  @return map-merge($default-theme, $new-theme);
+}
+
+@mixin minimal-hardcoded-theme($theme) {
+  // Outputs rules with "hardcoded" colors for old browsers with no support for custom
+  // properties. These rules will be repeated for every theme and will only be used by
+  // a tiny percentage of users, so something should only be added in here to fix major
+  // issues - the goal is only to make the themes *usable*, not perfect.
+  @supports not (--test: green) {
+    *,
+    #sidebar {
+      background-color: map-get($theme, "background-primary");
+      border-color: map-get($theme, "border");
+      color: map-get($theme, "foreground-primary");
+    }
+
+    a,
+    a:hover,
+    a:visited,
+    .btn-link,
+    .nav-item a,
+    .tab-item {
+      color: map-get($theme, "link");
+    }
+
+    // "&" represents the <body> element itself
+    &,
+    #site-header,
+    #site-header *,
+    .comment-header,
+    .comment-header * {
+      background-color: map-get($theme, "background-secondary");
+    }
+
+    input,
+    input[readonly],
+    textarea,
+    textarea[readonly],
+    .form-select:not([multiple]):not([size]) {
+      background-color: map-get($theme, "background-input");
+    }
+
+    .btn.btn-primary {
+      color: $light-color;
+    }
+
+    .text-secondary {
+      color: map-get($theme, "foreground-secondary");
+    }
+
+    // Prevents the * rule from causing a <span> to override its parent
+    span {
+      color: inherit;
+    }
+  }
+}
+
+@mixin use-theme($selected-theme) {
+  $theme: init-theme($selected-theme);
+  $is-light: is-color-bright(map-get($theme, "background-primary"));
+
+  @include minimal-hardcoded-theme($theme);
+
+  // When creating CSS custom properties and using any of Sass' capabilities
+  // you'll have to interpolate it with the Sass syntax `#{...}` as seen below.
+  --alert-color: #{map-get($theme, "alert")};
+
+  --background-input-color: #{map-get($theme, "background-input")};
+  --background-mixed-color:
+    #{mix(
+      map-get($theme, "background-primary"),
+      map-get($theme, "background-secondary")
+    )};
+  --background-primary-color: #{map-get($theme, "background-primary")};
+  --background-secondary-color: #{map-get($theme, "background-secondary")};
+
+  --border-color: #{map-get($theme, "border")};
+
+  --button-color: #{map-get($theme, "button")};
+  --button-by-brightness-color:
+    #{choose-by-brightness(
+      map-get($theme, "button"),
+      #000,
+      #fff
+    )};
+  --button-transparent-color: #{rgba(map-get($theme, "button"), 0.2)};
+
+  --button-used-color: #{map-get($theme, "button-used")};
+
+  --error-color: #{map-get($theme, "error")};
+  --error-by-brightness-color:
+    #{choose-by-brightness(
+      map-get($theme, "error"),
+      #000,
+      #fff
+    )};
+
+  --foreground-extreme-color:
+    #{choose-by-brightness(
+      map-get($theme, "background-primary"),
+      #000,
+      #fff
+    )};
+  --foreground-highlight-color: #{map-get($theme, "foreground-highlight")};
+  --foreground-mixed-color:
+    #{mix(
+      map-get($theme, "foreground-primary"),
+      map-get($theme, "foreground-highlight")
+    )};
+  --foreground-primary-color: #{map-get($theme, "foreground-primary")};
+  --foreground-secondary-color: #{map-get($theme, "foreground-secondary")};
+
+  --link-color: #{map-get($theme, "link")};
+  --link-hover-color: #{map-get($theme, "link-hover")};
+  --link-visited-color: #{map-get($theme, "link-visited")};
+
+  --stripe-mine-color: #{map-get($theme, "stripe-mine")};
+  --stripe-target-color: #{map-get($theme, "stripe-target")};
+
+  --success-color: #{map-get($theme, "success")};
+
+  --syntax-builtin-color: #{map-get($theme, "syntax-builtin")};
+  --syntax-comment-color: #{map-get($theme, "syntax-comment")};
+  --syntax-constant-color: #{map-get($theme, "syntax-constant")};
+  --syntax-keyword-color: #{map-get($theme, "syntax-keyword")};
+  --syntax-literal-color: #{map-get($theme, "syntax-literal")};
+  --syntax-string-color: #{map-get($theme, "syntax-string")};
+
+  // Colors for the special topic tags
+  @if $is-light {
+    --topic-tag-nsfw-color: #{map-get($theme, "topic-tag-nsfw")};
+    --topic-tag-nsfw-foreground-color: #fff;
+    --topic-tag-nsfw-border-color: transparent;
+
+    --topic-tag-spoiler-color: #{map-get($theme, "topic-tag-spoiler")};
+    --topic-tag-spoiler-foreground-color: #fff;
+    --topic-tag-spoiler-border-color: transparent;
+  } @else {
+    --topic-tag-nsfw-color: transparent;
+    --topic-tag-nsfw-foreground-color: #{map-get($theme, "topic-tag-nsfw")};
+    --topic-tag-nsfw-border-color: #{map-get($theme, "topic-tag-nsfw")};
+
+    --topic-tag-spoiler-color: transparent;
+    --topic-tag-spoiler-foreground-color: #{map-get($theme, "topic-tag-spoiler")};
+    --topic-tag-spoiler-border-color: #{map-get($theme, "topic-tag-spoiler")};
+  }
+
+  --warning-color: #{map-get($theme, "warning")};
+
+  // Colors for warning toasts
+  @if $is-light {
+    --warning-background-color: #{rgba(map-get($theme, "warning"), 0.9)};
+    --warning-foreground-color: #000;
+  } @else {
+    --warning-background-color: transparent;
+    --warning-foreground-color: #{map-get($theme, "warning")};
+  }
+
+  // Variables for the comment labels.
+  @if $is-light {
+    --background-label-exemplary-color: #{map-get($theme, "comment-label-exemplary")};
+    --background-label-joke-color: #{map-get($theme, "comment-label-joke")};
+    --background-label-noise-color: #{map-get($theme, "comment-label-noise")};
+    --background-label-offtopic-color: #{map-get($theme, "comment-label-offtopic")};
+    --background-label-malice-color: #{map-get($theme, "comment-label-malice")};
+
+    --comment-label-exemplary-color: #{map-get($theme, "comment-label-exemplary")};
+    --comment-label-joke-color: #{map-get($theme, "comment-label-joke")};
+    --comment-label-noise-color: #{map-get($theme, "comment-label-noise")};
+    --comment-label-offtopic-color: #{map-get($theme, "comment-label-offtopic")};
+    --comment-label-malice-color: #{map-get($theme, "comment-label-malice")};
+
+    --foreground-label-exemplary-color: #fff;
+    --foreground-label-joke-color: #fff;
+    --foreground-label-noise-color: #fff;
+    --foreground-label-offtopic-color: #fff;
+    --foreground-label-malice-color: #fff;
+  } @else {
+    --background-label-exemplary-color: transparent;
+    --background-label-joke-color: transparent;
+    --background-label-noise-color: transparent;
+    --background-label-offtopic-color: transparent;
+    --background-label-malice-color: transparent;
+
+    --comment-label-exemplary-color: #{map-get($theme, "comment-label-exemplary")};
+    --comment-label-joke-color: #{map-get($theme, "comment-label-joke")};
+    --comment-label-noise-color: #{map-get($theme, "comment-label-noise")};
+    --comment-label-offtopic-color: #{map-get($theme, "comment-label-offtopic")};
+    --comment-label-malice-color: #{map-get($theme, "comment-label-malice")};
+
+    --foreground-label-exemplary-color: #{map-get($theme, "comment-label-exemplary")};
+    --foreground-label-joke-color: #{map-get($theme, "comment-label-joke")};
+    --foreground-label-noise-color: #{map-get($theme, "comment-label-noise")};
+    --foreground-label-offtopic-color: #{map-get($theme, "comment-label-offtopic")};
+    --foreground-label-malice-color: #{map-get($theme, "comment-label-malice")};
+  }
+}

@@ -25,12 +25,15 @@ $default-theme: (
   "syntax-literal": #2aa198,  // Solarized
   "syntax-string": #2aa198,  // Solarized
   "topic-tag-spoiler": #e66b00,
-  "warning": #e66b00,
+  "warning": #e66b00
 );
 
-// define the default theme using the base values
 body {
   @include use-theme($default-theme);
 }
 
-@include theme-preview-block($default-theme, "white");
+@include theme-preview-block(
+  "white",
+  map-get($default-theme, "foreground-primary"),
+  map-get($default-theme, "background-primary")
+);

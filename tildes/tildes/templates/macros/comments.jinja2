@@ -98,17 +98,21 @@
     </header>
 
     {% if request.has_permission('view', comment) %}
-      {% if comment.is_label_active("exemplary") and request.has_permission("view_exemplary_reasons", comment) %}
-        <details class="comment-exemplary-reasons">
-          <summary><span class="label label-comment label-comment-exemplary">Exemplary</span>
-            <span class="comment-label-count">x{{ comment.label_counts["exemplary"] }}</span>
-          </summary>
-          <ul>
-          {% for label in comment.labels if label.name == "exemplary" %}
-            <li>"{{ label.reason }}"</li>
-          {% endfor %}
-          </ul>
-        </details>
+      {% if comment.is_label_active("exemplary") %}
+        {% if request.has_permission("view_exemplary_reasons", comment) %}
+          <details class="comment-exemplary-reasons">
+            <summary><span class="label label-comment label-comment-exemplary">Exemplary</span>
+              <span class="comment-label-count">x{{ comment.label_counts["exemplary"] }}</span>
+            </summary>
+            <ul>
+            {% for label in comment.labels if label.name == "exemplary" %}
+              <li>"{{ label.reason }}"</li>
+            {% endfor %}
+            </ul>
+          </details>
+        {% else %}
+          <ul class="comment-labels"><li class="label label-comment label-comment-exemplary">Exemplary</li></ul>
+        {% endif %}
       {% endif %}
 
       {% if comment.label_counts and request.has_permission("view_labels", comment) %}
@@ -203,7 +207,7 @@
                     comment_id36=comment.comment_id36,
                   ) }}"
                   data-ic-swap-style="replace"
-                  data-ic-target="#comment-{{ comment.comment_id36 }} .btn-post:first + .btn-post-settings"
+                  data-ic-target="#comment-{{ comment.comment_id36 }} .btn-post:first + .post-action-settings"
                 >View Markdown</button>
               </li>
             </menu>
@@ -227,7 +231,7 @@
           </li>
         {% endif %}
       </menu>
-      <div class="btn-post-settings"></div>
+      <div class="post-action-settings"></div>
     {% endif %}
   </div>
 {% endmacro %}

@@ -10,6 +10,11 @@
 
 {% block title %}Topics in ~{{ group.path }}{% endblock %}
 
+{% block link_alternate_feeds %}
+  <link href="{{ request.current_route_path("topics.atom") }}" type="application/atom+xml" rel="alternate" title="Topics Atom feed" />
+  <link href="{{ request.current_route_path("topics.rss") }}" type="application/rss+xml" rel="alternate" title="Topics RSS feed" />
+{% endblock %}
+
 {% block header_context_link %}
   {{ group_segmented_link(group) }}
 {% endblock %}
@@ -112,6 +117,12 @@
     Showing only topics with the tag "{{ tag|replace('_', ' ') }}".
     <a href="{{ request.current_listing_normal_url() }}">Back to normal view</a>
   {% endif %}
+
+  {% if request.user.filtered_topic_tags and not unfiltered %}
+    <br>
+    Topic tag filters active (see sidebar).
+    <a href="{{ request.current_listing_normal_url({'tag': tag, 'unfiltered': 'true'}) }}">View unfiltered list</a>
+  {% endif %}
 {% elif unfiltered %}
   Showing unfiltered topic list.
   <a href="{{ request.current_listing_normal_url() }}">Back to normal view</a>
@@ -142,7 +153,7 @@
   <div class="empty">
     {% if period %}
       <h2 class="empty-title">No topics in the selected time period</h2>
-      {% if is_single_group and request.has_permission('post_topic', group) %}
+      {% if is_single_group and request.has_permission("topic.post", group) %}
         <p class="empty-subtitle">Try choosing a longer time period, or break the silence by posting one yourself.</p>
         <div class="empty-action">
           <a href="/~{{ group.path }}/new_topic" class="btn btn-primary">Post a new topic</a>
@@ -222,12 +233,12 @@
 
   {{ render_group_subscription_box(group) }}
 
-  {% if request.has_permission('post_topic', group) %}
+  {% if request.has_permission("topic.post", group) %}
     <a href="/~{{ group.path }}/new_topic" class="btn btn-primary">Post a new topic</a>
   {% endif %}
 
   {% if group.sidebar_rendered_html %}
-    {{ group.sidebar_rendered_html|safe }}
+    <div class="group-sidebar-text">{{ group.sidebar_rendered_html|safe }}</div>
   {% endif %}
 
   {% if subgroups %}

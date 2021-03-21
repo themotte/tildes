@@ -4,6 +4,7 @@
 """Custom schema field definitions."""
 
 import enum
+import re
 from typing import Any, Mapping, Optional, Type
 
 import sqlalchemy_utils
@@ -36,7 +37,11 @@ class Enum(Field):
         return value.name.lower()
 
     def _deserialize(
-        self, value: str, attr: Optional[str], data: DataType, **kwargs: Any,
+        self,
+        value: str,
+        attr: Optional[str],
+        data: DataType,
+        **kwargs: Any,
     ) -> enum.Enum:
         """Deserialize a string to the enum member with that name."""
         if not self._enum_class:
@@ -63,7 +68,11 @@ class ShortTimePeriod(Field):
     """
 
     def _deserialize(
-        self, value: str, attr: Optional[str], data: DataType, **kwargs: Any,
+        self,
+        value: str,
+        attr: Optional[str],
+        data: DataType,
+        **kwargs: Any,
     ) -> Optional[SimpleHoursPeriod]:
         """Deserialize to a SimpleHoursPeriod object."""
         if value == "all":
@@ -75,7 +84,11 @@ class ShortTimePeriod(Field):
             raise ValidationError("Invalid time period")
 
     def _serialize(
-        self, value: Optional[SimpleHoursPeriod], attr: str, obj: object, **kwargs: Any,
+        self,
+        value: Optional[SimpleHoursPeriod],
+        attr: str,
+        obj: object,
+        **kwargs: Any,
     ) -> Optional[str]:
         """Serialize the value to the "short form" string."""
         if not value:
@@ -104,7 +117,11 @@ class Markdown(Field):
             raise ValidationError("Cannot be entirely whitespace.")
 
     def _deserialize(
-        self, value: str, attr: Optional[str], data: DataType, **kwargs: Any,
+        self,
+        value: str,
+        attr: Optional[str],
+        data: DataType,
+        **kwargs: Any,
     ) -> str:
         """Deserialize the string, removing carriage returns in the process."""
         value = value.replace("\r", "")
@@ -137,7 +154,11 @@ class SimpleString(Field):
         super().__init__(validate=Length(min=1, max=max_length), **kwargs)
 
     def _deserialize(
-        self, value: str, attr: Optional[str], data: DataType, **kwargs: Any,
+        self,
+        value: str,
+        attr: Optional[str],
+        data: DataType,
+        **kwargs: Any,
     ) -> str:
         """Deserialize the string, removing/replacing as necessary."""
         return simplify_string(value)
@@ -150,6 +171,10 @@ class SimpleString(Field):
 class Ltree(Field):
     """Field for postgresql ltree type."""
 
+    # note that this regex only checks whether all of the chars are individually valid,
+    # but doesn't verify that the value as a whole is a valid ltree path
+    VALID_CHARS_REGEX = re.compile("^[A-Za-z0-9_.]+$")
+
     def _serialize(
         self, value: sqlalchemy_utils.Ltree, attr: str, obj: object, **kwargs: Any
     ) -> str:
@@ -157,11 +182,18 @@ class Ltree(Field):
         return value.path
 
     def _deserialize(
-        self, value: str, attr: Optional[str], data: DataType, **kwargs: Any,
+        self,
+        value: str,
+        attr: Optional[str],
+        data: DataType,
+        **kwargs: Any,
     ) -> sqlalchemy_utils.Ltree:
         """Deserialize a string path to an Ltree object."""
         # convert to lowercase and replace spaces with underscores
         value = value.lower().replace(" ", "_")
+
+        if not self.VALID_CHARS_REGEX.fullmatch(value):
+            raise ValidationError("Only letters, numbers, and spaces allowed.")
 
         try:
             return sqlalchemy_utils.Ltree(value)

@@ -9,7 +9,6 @@ from pyramid.httpexceptions import HTTPNotFound
 from pyramid.request import Request
 from pyramid.response import Response
 from sqlalchemy.exc import IntegrityError
-from webargs.pyramidparser import use_kwargs
 
 from tildes.enums import LogEventType
 from tildes.models.group import Group
@@ -18,7 +17,7 @@ from tildes.models.topic import Topic, TopicBookmark, TopicIgnore, TopicVote
 from tildes.schemas.group import GroupSchema
 from tildes.schemas.topic import TopicSchema
 from tildes.views import IC_NOOP
-from tildes.views.decorators import ic_view_config
+from tildes.views.decorators import ic_view_config, use_kwargs
 
 
 @ic_view_config(
@@ -50,7 +49,7 @@ def get_topic_contents(request: Request) -> dict:
     renderer="topic_contents.jinja2",
     permission="edit",
 )
-@use_kwargs(TopicSchema(only=("markdown",)))
+@use_kwargs(TopicSchema(only=("markdown",)), location="form")
 def patch_topic(request: Request, markdown: str) -> dict:
     """Update a topic with Intercooler."""
     topic = request.context
@@ -158,7 +157,9 @@ def get_topic_tags(request: Request) -> dict:
     renderer="topic_tags.jinja2",
     permission="tag",
 )
-@use_kwargs({"tags": String(missing=""), "conflict_check": String(missing="")})
+@use_kwargs(
+    {"tags": String(missing=""), "conflict_check": String(missing="")}, location="form"
+)
 def put_tag_topic(request: Request, tags: str, conflict_check: str) -> dict:
     """Apply tags to a topic with Intercooler."""
     topic = request.context
@@ -225,7 +226,7 @@ def get_topic_group(request: Request) -> dict:
     request_method="PATCH",
     permission="move",
 )
-@use_kwargs(GroupSchema(only=("path",)))
+@use_kwargs(GroupSchema(only=("path",)), location="form")
 def patch_move_topic(request: Request, path: str) -> dict:
     """Move a topic to a different group with Intercooler."""
     topic = request.context
@@ -318,7 +319,9 @@ def delete_topic_lock(request: Request) -> dict:
 
 
 @ic_view_config(
-    route_name="topic_pin", request_method="PUT", permission="pin",
+    route_name="topic_pin",
+    request_method="PUT",
+    permission="pin",
 )
 def pin_topic(request: Request) -> Response:
     """Pin a topic with Intercooler."""
@@ -331,7 +334,9 @@ def pin_topic(request: Request) -> Response:
 
 
 @ic_view_config(
-    route_name="topic_pin", request_method="DELETE", permission="pin",
+    route_name="topic_pin",
+    request_method="DELETE",
+    permission="pin",
 )
 def unpin_topic(request: Request) -> Response:
     """Unpin a topic with Intercooler."""
@@ -360,7 +365,7 @@ def get_topic_title(request: Request) -> dict:
     request_method="PATCH",
     permission="edit_title",
 )
-@use_kwargs(TopicSchema(only=("title",)))
+@use_kwargs(TopicSchema(only=("title",)), location="form")
 def patch_topic_title(request: Request, title: str) -> dict:
     """Edit a topic's title with Intercooler."""
     topic = request.context
@@ -399,7 +404,7 @@ def get_topic_link(request: Request) -> dict:
     request_method="PATCH",
     permission="edit_link",
 )
-@use_kwargs(TopicSchema(only=("link",)))
+@use_kwargs(TopicSchema(only=("link",)), location="form")
 def patch_topic_link(request: Request, link: str) -> dict:
     """Edit a topic's link with Intercooler."""
     topic = request.context
